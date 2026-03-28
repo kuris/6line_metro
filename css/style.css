@@ -105,6 +105,25 @@ html.theme-light #avatar-name {
   color: var(--gold);
 }
 
+html.theme-light #car-strip {
+  background: var(--panel-bg);
+  border-top-color: var(--border);
+}
+html.theme-light .car-item {
+  border-color: var(--border2);
+  color: var(--dim);
+}
+html.theme-light .car-item.active {
+  border-color: var(--line6);
+  color: var(--line6);
+  background: #fff8e8;
+  box-shadow: 0 0 5px rgba(192,48,16,0.25);
+}
+html.theme-light .car-item:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
 html.theme-light #game {
   background: var(--bg2);
   border-color: var(--border);
