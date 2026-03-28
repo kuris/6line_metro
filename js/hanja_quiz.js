@@ -75,9 +75,10 @@ async function maybeRunHanjaQuiz(st) {
   }
   
   // 문항 구성: 정답 1개 + 오답 2개 + "모르겠다"
+  // (한자 형태를 그대로 보여주면 모양 맞추기가 되므로 뜻만 보여줌)
   let options = [
-    { text: `${data.hanja} (${data.meaning})`, correct: true },
-    ...distractors.map(d => ({ text: `${d.hanja} (${d.meaning})`, correct: false }))
+    { text: `${data.meaning}`, correct: true },
+    ...distractors.map(d => ({ text: `${d.meaning}`, correct: false }))
   ];
   
   // 섞기
