@@ -95,6 +95,23 @@ async function sceneNextStation(nextIdx) {
 
   TrainPanel.setState(st.trainState);
 
+  // 한자 퀴즈 체크 (퀴즈가 발생하면 Promise가 완료될 때까지 대기)
+  if (typeof maybeRunHanjaQuiz === 'function') {
+    const quizRan = await maybeRunHanjaQuiz(st);
+    if (quizRan) {
+      // 퀴즈를 풀었어도 해당 역의 메인 이벤트나 설명(trivia)이 이어지도록 함
+      await print('', 'blank');
+      await print('열차는 멈추지 않고 계속 달려야 한다...', 'narrator', 300);
+      await print('', 'blank');
+      
+      // 퀴즈 후에 화면 하단으로 스크롤 강제
+      scrollBottom();
+      
+      // 1초 대기 후 다음 이벤트로
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
   // 이벤트 있는 역이면 씬 실행, 없으면 통과
   if (st.hasEvent && STATION_EVENTS[st.eventId]) {
     await STATION_EVENTS[st.eventId](nextIdx);

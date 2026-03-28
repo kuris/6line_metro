@@ -35,6 +35,7 @@ async function sceneIntro() {
   G.playerItem     = '';
   G.currentCar     = 4;
   G.stationDanger  = {};
+  G.hanjaQuizFreq  = 0.3;
   updateStats();
 
   TrainPanel.setState('idle');
@@ -93,8 +94,27 @@ async function sceneIntro() {
    이름 입력 후: 시간대 선택 → 출발역 선택
    ────────────────────────────────────────── */
 async function afterName() {
-  // 이름 입력 후: 나이 선택 → 성별 선택 → 시간대 선택
-  await sceneSelectAge();
+  // 이름 입력 후: 한자 퀴즈 설정 → 나이 선택 → 성별 선택 → 시간대 선택
+  await sceneSelectHanjaQuiz();
+}
+
+/* ──────────────────────────────────────────
+   한자 퀴즈 빈도 설정
+   ────────────────────────────────────────── */
+async function sceneSelectHanjaQuiz() {
+  await print('', 'blank');
+  await print('한자 퀴즈 빈도를 설정해주세요.', 'narrator');
+  await print('역 이름에 담긴 숨겨진 한자 의미를 맞히면 정신력이 회복됩니다.', 'system');
+  await print('', 'blank');
+
+  const opts = [
+    ['없음 (0%)', async () => { G.hanjaQuizFreq = 0.0; TrainPanel.addLog('한자 퀴즈: 없음', 'new'); await sceneSelectAge(); }],
+    ['● 가끔 (30% - 추천)', async () => { G.hanjaQuizFreq = 0.3; TrainPanel.addLog('한자 퀴즈: 가끔', 'new'); await sceneSelectAge(); }],
+    ['자주 (60%)', async () => { G.hanjaQuizFreq = 0.6; TrainPanel.addLog('한자 퀴즈: 자주', 'new'); await sceneSelectAge(); }],
+    ['항상 (100%)', async () => { G.hanjaQuizFreq = 1.0; TrainPanel.addLog('한자 퀴즈: 항상', 'new'); await sceneSelectAge(); }],
+  ];
+
+  choices(opts);
 }
 
 /* ──────────────────────────────────────────

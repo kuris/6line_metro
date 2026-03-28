@@ -25,6 +25,10 @@
   --border2:   #1e3040;
   --panel-bg:  #060e14;
   --touch-min: 44px;
+  --face-calm: #80e0a8;
+  --face-anxious: #ffaa22;
+  --face-fear: #ff5555;
+  --face-madness: #cc55ff;
 }
 
 /* ── 라이트 테마 ── */
@@ -44,6 +48,10 @@ html.theme-light {
   --border:    #c8bca8;
   --border2:   #b0a490;
   --panel-bg:  #ece6dc;
+  --face-calm: #1a6a3a;
+  --face-anxious: #8a5010;
+  --face-fear: #9a2020;
+  --face-madness: #6010a0;
 }
 
 /* 라이트 테마 개별 오버라이드 */
@@ -82,6 +90,20 @@ html.theme-light .tlog-entry       { color: #5a4a34; border-left-color: #b0a080;
 html.theme-light .tlog-entry.event { color: #8a3010; border-left-color: #c05020; }
 html.theme-light .tlog-entry.warn  { color: #8a4000; border-left-color: #c06010; }
 html.theme-light .tlog-entry.new   { color: #1a5030; border-left-color: #2a7a40; }
+
+html.theme-light #avatar-wrap {
+  background: var(--panel-bg);
+  border-top-color: var(--border);
+}
+html.theme-light #avatar-ascii {
+  color: var(--green);
+}
+html.theme-light #avatar-dialog {
+  color: var(--text);
+}
+html.theme-light #avatar-name {
+  color: var(--gold);
+}
 
 html.theme-light #game {
   background: var(--bg2);
@@ -485,6 +507,36 @@ body {
   scrollbar-color: #1e3040 transparent;
   flex-shrink: 0;
   -webkit-overflow-scrolling: touch;
+}
+
+/* 아바타 UI */
+#avatar-wrap {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#avatar-ascii {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--bright);
+  margin: 0;
+}
+#avatar-dialog {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text);
+  font-family: 'Noto Serif KR', monospace;
+  line-height: 1.4;
+}
+#avatar-name {
+  color: var(--gold);
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
 }
 
 /* 모바일 로그 탭에서는 train-log를 꽉 채움 */

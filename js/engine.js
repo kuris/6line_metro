@@ -98,7 +98,7 @@ function getFaceByMentalState(mental_state) {
                 "다음 역이 어디지.",
                 "오늘따라 사람이 없어.",
             ],
-            color: "#80e0a8"
+            color: "var(--face-calm)"
         },
         "ANXIOUS": {
             art: [
@@ -113,7 +113,7 @@ function getFaceByMentalState(mental_state) {
                 "저 냄새는 뭐지.",
                 "왜 이렇게 진동이 심하지.",
             ],
-            color: "#ffaa22"
+            color: "var(--face-anxious)"
         },
         "FEAR": {
             art: [
@@ -128,7 +128,7 @@ function getFaceByMentalState(mental_state) {
                 "내려야 해. 지금 당장.",
                 "저 사람... 숨을 안 쉬는 것 같아.",
             ],
-            color: "#ff5555"
+            color: "var(--face-fear)"
         },
         "MADNESS": {
             art: [
@@ -143,7 +143,7 @@ function getFaceByMentalState(mental_state) {
                 "38개 역... 38개 역...",
                 "기차는 멈추지 않아. 절대로.",
             ],
-            color: "#cc55ff"
+            color: "var(--face-madness)"
         },
     };
     return faces[mental_state] || faces["CALM"];
