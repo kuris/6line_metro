@@ -1058,7 +1058,7 @@ window.exportScreenshot = async function(customQuote) {
 │                                        │
 │  "${quote}"
 │                                        │
-│  line6.game                            │
+│  line6.vercel.app                      │
 └────────────────────────────────────────┘`;
 
   content.innerHTML = html;
