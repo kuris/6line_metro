@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>6호선 플랫포머 — ASCII MINI GAME</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #070b0e;
+  --bg2:     #0b1218;
+  --bg3:     #0f1820;
+  --text:    #b8c8d8;
+  --dim:     #4a6070;
+  --green:   #5aaa7a;
+  --bright:  #80e0a8;
+  --red:     #aa5050;
+  --gold:    #c8a840;
+  --blue:    #4080b0;
+  --line6:   #c05020;
+  --border:  #152030;
+  --border2: #1e3040;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', 'Noto Serif KR', monospace;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── 전체 레이아웃 ── */
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+  padding: 10px 8px 0;
+  gap: 6px;
+}
+
+/* ── 헤더 ── */
+#header {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border2);
+  padding-bottom: 6px;
+}
+#header-title {
+  font-size: 13px;
+  color: var(--line6);
+  letter-spacing: 3px;
+  font-weight: 700;
+}
+#header-sub {
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+#back-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+#back-btn:hover { border-color: var(--line6); color: var(--line6); }
+
+/* ── 스테이지 정보 바 ── */
+#info-bar {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  padding: 2px 0;
+}
+#info-stage { color: var(--gold); font-weight: 700; }
+#info-score { color: var(--bright); }
+#info-lives { color: var(--red); letter-spacing: 2px; }
+
+/* ── 타이머 바 ── */
+#timer-wrap {
+  width: 100%;
+  max-width: 640px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+#timer-bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--green), var(--gold));
+  transition: width 0.1s linear;
+  border-radius: 2px;
+}
+
+/* ── 게임 캔버스 영역 ── */
+#game-wrap {
+  width: 100%;
+  max-width: 640px;
+  flex: 1;
+  position: relative;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  overflow: hidden;
+  border-radius: 2px;
+  min-height: 0;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.0;
+  /* 좌우 벽 표시 */
+  border-left:  2px solid #1e3a50;
+  border-right: 2px solid #1e3a50;
+  box-sizing: border-box;
+}
+
+/* ── 배경 스크롤 레이어 ── */
+#bg-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 200%;
+  height: 100%;
+  color: var(--border2);
+  font-size: 12px;
+  line-height: 1.6;
+  pointer-events: none;
+  white-space: pre;
+  padding: 4px 0;
+  letter-spacing: 2px;
+}
+
+/* ── 게임 오브젝트 ── */
+.obj {
+  position: absolute;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+  transition: none;
+  white-space: nowrap;
+}
+#player {
+  font-size: 20px;
+  z-index: 10;
+  text-shadow: 0 0 8px currentColor;
+  transition: none;
+}
+/* 장애물 — 빨간 계열 (피해야 함) */
+.obstacle { color: #cc4444; z-index: 5; text-shadow: 0 0 6px rgba(200,60,60,0.5); }
+.obstacle.danger-type { color: #ff2222; text-shadow: 0 0 10px rgba(255,40,40,0.7); animation: dangerPulse 0.5s ease-in-out infinite alternate; }
+
+/* 아이템 — 밝은 청록/노랑 계열 (먹어야 함) */
+.item     { color: #40e0d0; z-index: 5;
+            text-shadow: 0 0 8px rgba(64,224,208,0.7);
+            animation: itemFloat 0.8s ease-in-out infinite alternate; }
+.item.item-heart  { color: #ff6688; text-shadow: 0 0 8px rgba(255,100,136,0.7); }
+.item.item-time   { color: #6699ff; text-shadow: 0 0 8px rgba(102,153,255,0.7); }
+.item.item-star   { color: #ffdd44; text-shadow: 0 0 8px rgba(255,220,68,0.7); }
+.item.item-bonus  { color: #88ff66; text-shadow: 0 0 8px rgba(136,255,102,0.7); }
+
+.platform { color: #3a6080; z-index: 4; letter-spacing: 0px; font-size: 14px;
+            text-shadow: 0 0 4px rgba(58,96,128,0.4); }
+
+@keyframes dangerPulse {
+  from { opacity: 0.7; transform: scale(1);   }
+  to   { opacity: 1.0; transform: scale(1.08); }
+}
+
+@keyframes itemFloat {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-4px); }
+}
+
+/* ── 파티클 ── */
+.particle {
+  position: absolute;
+  font-size: 14px;
+  pointer-events: none;
+  animation: particleFly 0.6s ease-out forwards;
+  z-index: 20;
+}
+@keyframes particleFly {
+  0%   { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+}
+
+/* ── 지면 ── */
+#ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  color: var(--dim);
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0px;
+  z-index: 3;
+  pointer-events: none;
+}
+#ground-line {
+  color: var(--border2);
+  font-size: 11px;
+  letter-spacing: 0px;
+}
+
+/* ── 오버레이 (시작/게임오버/클리어) ── */
+#overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(7,11,14,0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  gap: 12px;
+  padding: 20px;
+}
+#overlay.hidden { display: none; }
+
+#overlay-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--line6);
+  text-align: center;
+}
+#overlay-sub {
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 2px;
+  text-align: center;
+  line-height: 2;
+}
+#overlay-score {
+  font-size: 15px;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+.ov-btn {
+  background: transparent;
+  border: 1px solid var(--line6);
+  color: var(--line6);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  padding: 10px 28px;
+  border-radius: 2px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.15s;
+  min-width: 160px;
+  text-align: center;
+}
+.ov-btn:hover { background: var(--line6); color: #fff; }
+.ov-btn.secondary {
+  border-color: var(--border2);
+  color: var(--dim);
+}
+.ov-btn.secondary:hover { border-color: var(--dim); color: var(--text); background: transparent; }
+
+/* ── ASCII 아트 미리보기 ── */
+#overlay-ascii {
+  font-size: 12px;
+  color: var(--dim);
+  text-align: center;
+  line-height: 1.6;
+  white-space: pre;
+  letter-spacing: 1px;
+}
+
+/* ── 스테이지 안내 ── */
+#stage-announce {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  color: var(--gold);
+  letter-spacing: 4px;
+  font-weight: 700;
+  z-index: 50;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 0 20px rgba(200,168,64,0.5);
+  animation: announceAnim 1.8s ease forwards;
+  white-space: nowrap;
+}
+@keyframes announceAnim {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.8); }
+  20%  { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+  70%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1); }
+}
+
+/* ── 콤보 표시 ── */
+#combo-display {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+  font-size: 13px;
+  color: var(--bright);
+  letter-spacing: 2px;
+  z-index: 30;
+  pointer-events: none;
+  text-shadow: 0 0 8px rgba(128,224,168,0.6);
+  transition: opacity 0.3s;
+}
+
+/* ── 터치 컨트롤 ── */
+#touch-controls {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0 4px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+#touch-left-group {
+  display: flex;
+  gap: 6px;
+}
+.touch-btn {
+  background: rgba(21,32,48,0.8);
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-size: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  touch-action: none;
+}
+.touch-btn:active,
+.touch-btn.pressed {
+  background: rgba(192,80,32,0.25);
+  border-color: var(--line6);
+  color: var(--line6);
+}
+#touch-jump {
+  width: 70px;
+  height: 56px;
+  border-color: var(--border2);
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--dim);
+}
+
+/* ── 레전드 바 ── */
+#legend-bar {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  padding: 3px 0;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg2);
+}
+.leg-item { display: flex; align-items: center; gap: 4px; }
+.leg-item.avoid   { color: #cc4444; }
+.leg-item.collect { color: #40e0d0; }
+.leg-sep { color: var(--border2); }
+
+/* ── 키 가이드 ── */
+#key-guide {
+  font-size: 10px;
+  color: var(--border2);
+  letter-spacing: 1px;
+  text-align: center;
+  padding-bottom: 4px;
+  flex-shrink: 0;
+}
+
+/* ── 메시지 팝업 ── */
+#msg-popup {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--bright);
+  letter-spacing: 2px;
+  z-index: 40;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: msgPop 1.4s ease forwards;
+}
+@keyframes msgPop {
+  0%   { opacity: 0; top: 20px; }
+  15%  { opacity: 1; top: 14px; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 스크린 흔들기 */
+@keyframes shake {
+  0%,100% { transform: translate(0,0); }
+  20%  { transform: translate(-4px, 2px); }
+  40%  { transform: translate(4px, -2px); }
+  60%  { transform: translate(-3px, 3px); }
+  80%  { transform: translate(3px, -1px); }
+}
+.shaking { animation: shake 0.35s ease; }
+</style>
+</head>
+<body>
+<div id="wrapper">
+
+  <!-- 헤더 -->
+  <div id="header">
+    <div>
+      <div id="header-title">LINE 6 · PLATFORM RUN</div>
+      <div id="header-sub">ASCII MINI GAME · 6호선 플랫포머</div>
+    </div>
+    <button id="back-btn" onclick="history.back()">← 돌아가기</button>
+  </div>
+
+  <!-- 정보 바 -->
+  <div id="info-bar">
+    <span id="info-stage">STAGE 1</span>
+    <span id="info-score">SCORE: 0</span>
+    <span id="info-lives">❤❤❤</span>
+  </div>
+
+  <!-- 타이머 -->
+  <div id="timer-wrap">
+    <div id="timer-bar" style="width:100%"></div>
+  </div>
+
+  <!-- 게임 캔버스 -->
+  <div id="game-wrap">
+    <div id="game-canvas">
+      <div id="bg-layer"></div>
+      <div id="ground">
+        <div id="ground-line"></div>
+        <div id="ground-tiles"></div>
+      </div>
+      <div id="combo-display"></div>
+    </div>
+
+    <!-- 오버레이 -->
+    <div id="overlay">
+      <div id="overlay-ascii"></div>
+      <div id="overlay-title">LINE 6 · PLATFORM RUN</div>
+      <div id="overlay-sub"></div>
+      <div id="overlay-score"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:200px;">
+        <button class="ov-btn" id="ov-start-btn">▶ 시작하기</button>
+        <button class="ov-btn secondary" id="ov-back-btn" onclick="history.back()">← 메인으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 터치 컨트롤 -->
+  <div id="touch-controls">
+    <div id="touch-left-group">
+      <button class="touch-btn" id="btn-left">◀</button>
+      <button class="touch-btn" id="btn-right">▶</button>
+    </div>
+    <button class="touch-btn" id="touch-jump">JUMP<br>SPACE</button>
+  </div>
+
+  <!-- 레전드 + 키 가이드 -->
+  <div id="legend-bar">
+    <span class="leg-item avoid">■ 빨간색([사람][취객!]) = 피하기!</span>
+    <span class="leg-sep">│</span>
+    <span class="leg-item collect">■ 청록색([교통카드][도시락]) = 먹기!</span>
+  </div>
+  <div id="key-guide">[ ← → ] 이동 &nbsp;|&nbsp; [ SPACE / ↑ ] 점프 (더블점프 가능) &nbsp;|&nbsp; [ ESC ] 일시정지</div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════
+   상수 & 설정
+═══════════════════════════════════════ */
+const CHAR = {
+  player:   '§',
+  dead:     'x',
+  // 장애물 — 빨간색, 피해야 함
+  obstacle: ['[사람]','[짐가방]','[유모차]','[백팩]'],
+  danger:   ['[취객!]','[무개념!]'],
+  // 아이템 — 청록/노란색, 먹어야 함
+  items: [
+    { ch: '[교통카드]', cls: 'item-star',  label: '점수+200' },
+    { ch: '[도시락]',   cls: 'item-heart', label: '체력회복' },
+    { ch: '[환승정보]', cls: 'item-time',  label: '시간+4초' },
+    { ch: '[비상구]',   cls: 'item-bonus', label: '점수+300' },
+  ],
+  platform: '═',
+  ground:   '━',
+  bg: ['·','·','·',' ',' ',' ',' ',' '],
+};
+
+const STAGE_DATA = [
+  {
+    name: '응암역',
+    sub:  '출발역 — 한산한 아침',
+    color: '#5aaa7a',
+    obstacleCount: 3,
+    itemCount: 3,
+    platformCount: 2,
+    speed: 2.2,
+    timeLimit: 30,
+    bgChar: ['·',' ',' '],
+  },
+  {
+    name: '불광역',
+    sub:  '3호선 환승 — 혼잡 주의!',
+    color: '#c8a840',
+    obstacleCount: 5,
+    itemCount: 3,
+    platformCount: 3,
+    speed: 2.8,
+    timeLimit: 28,
+    bgChar: ['▪',' ',' '],
+  },
+  {
+    name: '연신내역',
+    sub:  '출근 러시 — 만원 열차!',
+    color: '#c05020',
+    obstacleCount: 7,
+    itemCount: 4,
+    platformCount: 3,
+    speed: 3.4,
+    timeLimit: 25,
+    bgChar: ['▪','·',' '],
+  },
+  {
+    name: '합정역',
+    sub:  '2호선 환승 — 복잡한 구조',
+    color: '#4080b0',
+    obstacleCount: 8,
+    itemCount: 4,
+    platformCount: 4,
+    speed: 3.8,
+    timeLimit: 25,
+    bgChar: ['█','▪','·'],
+  },
+  {
+    name: '이태원역',
+    sub:  '심야 — 위험 구역 통과!',
+    color: '#aa5050',
+    obstacleCount: 10,
+    itemCount: 3,
+    platformCount: 4,
+    speed: 4.2,
+    timeLimit: 22,
+    bgChar: ['█','▪','·'],
+  },
+  {
+    name: '봉화산역',
+    sub:  '종착역 — 마지막 질주!',
+    color: '#80e0a8',
+    obstacleCount: 12,
+    itemCount: 5,
+    platformCount: 5,
+    speed: 4.8,
+    timeLimit: 20,
+    bgChar: ['█','▪','·'],
+  },
+];
+
+/* ═══════════════════════════════════════
+   DOM 참조
+═══════════════════════════════════════ */
+const canvas       = document.getElementById('game-canvas');
+const gameWrap     = document.getElementById('game-wrap');
+const overlay      = document.getElementById('overlay');
+const ovTitle      = document.getElementById('overlay-title');
+const ovSub        = document.getElementById('overlay-sub');
+const ovScore      = document.getElementById('overlay-score');
+const ovStartBtn   = document.getElementById('ov-start-btn');
+const ovAscii      = document.getElementById('overlay-ascii');
+const infoStage    = document.getElementById('info-stage');
+const infoScore    = document.getElementById('info-score');
+const infoLives    = document.getElementById('info-lives');
+const timerBar     = document.getElementById('timer-bar');
+const groundLine   = document.getElementById('ground-line');
+const groundTiles  = document.getElementById('ground-tiles');
+const bgLayer      = document.getElementById('bg-layer');
+const comboDisplay = document.getElementById('combo-display');
+
+/* ═══════════════════════════════════════
+   게임 상태
+═══════════════════════════════════════ */
+const G = {
+  state:       'title',   // title | playing | paused | dead | clear | gameover
+  stage:       0,
+  lives:       3,
+  score:       0,
+  combo:       0,
+  comboTimer:  null,
+  time:        30,
+  timeMax:     30,
+  animFrame:   null,
+  lastTime:    0,
+  bgOffset:    0,
+  spawnTimer:  0,
+  obstSpawned: 0,
+  itemSpawned: 0,
+  platSpawned: 0,
+  objects:     [],
+  paused:      false,
+};
+
+/* ── 플레이어 ── */
+const P = {
+  el:       null,
+  x:        60,
+  y:        0,         // ground 위 픽셀 (0 = 지면)
+  vy:       0,
+  vx:       0,
+  onGround: true,
+  onPlat:   null,
+  dead:     false,
+  invincible: 0,       // 무적 프레임
+  w: 22, h: 24,
+  jumpCount: 0,
+  maxJump:   2,        // 더블점프
+};
+
+/* ── 키 상태 ── */
+const KEY = { left: false, right: false, jump: false, jumpPressed: false };
+
+/* ── 물리 상수 ── */
+const GRAVITY  = 0.55;   // 매 프레임 vy 감소량
+const JUMP_V   = 13;     // 점프 초기 속도 (양수 = 위쪽)
+const MOVE_SPD = 3.2;
+const GROUND_H = 36;   // 지면 높이(px)
+
+/* ═══════════════════════════════════════
+   초기화
+═══════════════════════════════════════ */
+function init() {
+  // 플레이어 엘리먼트
+  if (!P.el) {
+    P.el = document.createElement('div');
+    P.el.id = 'player';
+    P.el.className = 'obj';
+    P.el.style.color = '#80e0a8';
+    canvas.appendChild(P.el);
+  }
+
+  const stg = STAGE_DATA[G.stage];
+  G.time     = stg.timeLimit;
+  G.timeMax  = stg.timeLimit;
+  G.objects  = [];
+  G.bgOffset = 0;
+  G.spawnTimer  = 0;
+  G.obstSpawned = 0;
+  G.itemSpawned = 0;
+  G.platSpawned = 0;
+
+  P.x = 60;
+  P.y = 0;
+  P.vy = 0;
+  P.vx = 0;
+  P.onGround = true;
+  P.dead = false;
+  P.invincible = 0;
+  P.jumpCount = 0;
+  P.el.textContent = CHAR.player;
+  P.el.style.color = '#80e0a8';
+
+  // 기존 오브젝트 제거
+  canvas.querySelectorAll('.obj:not(#player)').forEach(e => e.remove());
+  canvas.querySelectorAll('.particle').forEach(e => e.remove());
+  canvas.querySelectorAll('#stage-announce').forEach(e => e.remove());
+  canvas.querySelectorAll('#msg-popup').forEach(e => e.remove());
+
+  buildGround();
+  buildBg(stg.bgChar);
+  updateHUD();
+
+  // 스테이지 안내
+  const ann = document.createElement('div');
+  ann.id = 'stage-announce';
+  ann.innerHTML = `STAGE ${G.stage+1} &nbsp;·&nbsp; ${stg.name}<br><span style="font-size:11px;color:#4a6070;letter-spacing:2px">${stg.sub}</span>`;
+  canvas.appendChild(ann);
+  ann.addEventListener('animationend', () => ann.remove());
+}
+
+function buildGround() {
+  const w = gameWrap.offsetWidth;
+  const cols = Math.ceil(w / 8) + 4;
+  groundLine.textContent  = '─'.repeat(cols);
+  groundTiles.textContent = CHAR.ground.repeat(cols);
+  groundTiles.style.color = '#1e3040';
+  groundLine.style.color  = '#152030';
+}
+
+function buildBg(chars) {
+  const w = gameWrap.offsetWidth * 2;
+  const h = gameWrap.offsetHeight;
+  const cols = Math.ceil(w / 10);
+  const rows = Math.ceil(h / 20);
+  let txt = '';
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      txt += chars[Math.floor(Math.random() * chars.length)];
+      txt += ' ';
+    }
+    txt += '\n';
+  }
+  bgLayer.textContent = txt;
+  bgLayer.style.color = '#0f1820';
+}
+
+/* ═══════════════════════════════════════
+   게임 루프
+═══════════════════════════════════════ */
+function gameLoop(ts) {
+  if (G.state !== 'playing') return;
+  const dt = Math.min((ts - G.lastTime) / 16.67, 3);
+  G.lastTime = ts;
+
+  if (!G.paused) {
+    updateBg(dt);
+    updateTimer(dt);
+    spawnObjects(dt);
+    updateObjects(dt);
+    updatePlayer(dt);
+    checkCollisions();
+    renderPlayer();
+    renderObjects();
+  }
+
+  G.animFrame = requestAnimationFrame(gameLoop);
+}
+
+/* ── 배경 스크롤 ── */
+function updateBg(dt) {
+  const spd = STAGE_DATA[G.stage].speed;
+  G.bgOffset += spd * 0.3 * dt;
+  const w = gameWrap.offsetWidth;
+  if (G.bgOffset > w) G.bgOffset -= w;
+  bgLayer.style.transform = `translateX(-${G.bgOffset}px)`;
+}
+
+/* ── 타이머 ── */
+function updateTimer(dt) {
+  G.time -= (dt / 60);
+  if (G.time < 0) G.time = 0;
+  const pct = (G.time / G.timeMax) * 100;
+  timerBar.style.width = pct + '%';
+  if (pct < 30) {
+    timerBar.style.background = 'linear-gradient(to right, #aa5050, #c8a840)';
+  } else {
+    timerBar.style.background = 'linear-gradient(to right, #5aaa7a, #c8a840)';
+  }
+  if (G.time <= 0) onTimeUp();
+}
+
+/* ── 오브젝트 스폰 ── */
+function spawnObjects(dt) {
+  const stg = STAGE_DATA[G.stage];
+  G.spawnTimer += dt;
+
+  // 적/장애물
+  const obstInterval = Math.max(1.2, 3.5 - G.stage * 0.3) * 60 / stg.speed;
+  if (G.spawnTimer > obstInterval && G.obstSpawned < stg.obstacleCount + stg.itemCount + stg.platformCount) {
+    G.spawnTimer = 0;
+
+    const r = Math.random();
+    if (r < 0.45 && G.obstSpawned < stg.obstacleCount) {
+      spawnObstacle();
+    } else if (r < 0.70 && G.itemSpawned < stg.itemCount) {
+      spawnItem();
+    } else if (G.platSpawned < stg.platformCount) {
+      spawnPlatform();
+    } else if (G.obstSpawned < stg.obstacleCount) {
+      spawnObstacle();
+    } else if (G.itemSpawned < stg.itemCount) {
+      spawnItem();
+    }
+  }
+}
+
+function spawnObstacle() {
+  const stg  = STAGE_DATA[G.stage];
+  const isDanger = Math.random() < 0.25 && G.stage >= 2;
+  const chars = isDanger ? CHAR.danger : CHAR.obstacle;
+  const ch   = chars[Math.floor(Math.random() * chars.length)];
+
+  const el = document.createElement('div');
+  el.className = 'obj obstacle' + (isDanger ? ' danger-type' : '');
+  el.textContent = ch;
+  el.title = '⚠ 장애물 — 피하세요!';
+
+  const cw = gameWrap.offsetWidth;
+
+  // 장애물 패턴:
+  //  0 = 지면 밀착 (반드시 점프로 넘기)
+  //  1 = 공중 (반드시 지면으로 피하기)
+  //  2 = 지면 밀착 2개 연속 (높이 달라서 더블점프 필요)
+  const pattern = (() => {
+    const r = Math.random();
+    if (G.stage === 0) return 0;                      // 스테이지1: 지면만
+    if (G.stage === 1) return r < 0.75 ? 0 : 1;      // 스테이지2: 75% 지면
+    return r < 0.55 ? 0 : 1;                          // 스테이지3~: 반반
+  })();
+
+  // 지면 장애물: bottom = GROUND_H (지면에 딱 붙음)
+  // 공중 장애물: bottom = 점프 정점 부근 높이 (60~80px)
+  const objH   = 22;
+  const objW   = ch.length * 9 + 4;   // 글자 수에 맞게 너비 계산
+  const gY     = pattern === 0 ? GROUND_H : GROUND_H + 62 + Math.random() * 20;
+
+  el.style.left   = (cw + 20) + 'px';
+  el.style.bottom = gY + 'px';
+  el.dataset.gx   = cw + 20;
+  el.dataset.gy   = gY;
+  el.dataset.type = 'obstacle';
+  el.dataset.pattern = pattern;
+  el.dataset.w    = objW;
+  el.dataset.h    = objH;
+
+  // 공중 장애물은 화살표 표시 추가
+  if (pattern === 1) {
+    el.style.borderBottom = '1px dashed rgba(204,68,68,0.4)';
+    // 아래 가이드 선 (점선으로 지면까지)
+    const guide = document.createElement('div');
+    guide.style.cssText = `position:absolute;left:50%;top:100%;width:1px;
+      height:${gY - GROUND_H}px;background:rgba(204,68,68,0.2);
+      transform:translateX(-50%);pointer-events:none;`;
+    el.appendChild(guide);
+  }
+
+  canvas.appendChild(el);
+  G.objects.push(el);
+  G.obstSpawned++;
+}
+
+function spawnItem() {
+  const itemDef = CHAR.items[Math.floor(Math.random() * CHAR.items.length)];
+  const ch  = itemDef.ch;
+  const el  = document.createElement('div');
+  el.className = `obj item ${itemDef.cls}`;
+  el.textContent = ch;
+  el.title = `✨ ${itemDef.label}`;
+
+  const cw   = gameWrap.offsetWidth;
+  const objW = ch.length * 9 + 4;
+  // 아이템은 점프하면 닿는 높이에 배치 (점프 정점 근처)
+  const gY   = GROUND_H + 30 + Math.random() * 50;
+
+  el.style.left   = (cw + 20) + 'px';
+  el.style.bottom = gY + 'px';
+  el.dataset.gx   = cw + 20;
+  el.dataset.gy   = gY;
+  el.dataset.type = 'item';
+  el.dataset.ch   = ch;
+  el.dataset.w    = objW;
+  el.dataset.h    = 22;
+
+  canvas.appendChild(el);
+  G.objects.push(el);
+  G.itemSpawned++;
+}
+
+function spawnPlatform() {
+  const len = 4 + Math.floor(Math.random() * 5);
+  const el = document.createElement('div');
+  el.className = 'obj platform';
+  el.textContent = CHAR.platform.repeat(len);
+
+  const cw = gameWrap.offsetWidth;
+  const gY = GROUND_H + 45 + Math.random() * 50;
+
+  el.style.left   = (cw + 20) + 'px';
+  el.style.bottom = gY + 'px';
+  el.dataset.gx   = cw + 20;
+  el.dataset.gy   = gY;
+  el.dataset.type = 'platform';
+  el.dataset.len  = len;
+  el.dataset.w    = len * 9;
+  el.dataset.h    = 14;
+
+  canvas.appendChild(el);
+  G.objects.push(el);
+  G.platSpawned++;
+}
+
+/* ── 오브젝트 업데이트 (이동) ── */
+function updateObjects(dt) {
+  const spd = STAGE_DATA[G.stage].speed;
+  G.objects = G.objects.filter(el => {
+    let gx = parseFloat(el.dataset.gx) - spd * dt;
+    el.dataset.gx = gx;
+    el.style.left = gx + 'px';
+    if (gx < -80) {
+      el.remove();
+      return false;
+    }
+    return true;
+  });
+}
+
+/* ── 플레이어 물리 ──
+   P.y = 지면으로부터 위쪽 픽셀 거리 (0 = 지면, 양수 = 공중)
+   P.vy = 양수면 위로, 음수면 아래로
+─────────────────────────── */
+function updatePlayer(dt) {
+  const cw = canvas.clientWidth  || gameWrap.offsetWidth;
+  const playerW = 20; // 플레이어 글자 너비(px)
+
+  // 좌우 자유 이동 + 벽 충돌
+  if (KEY.left)  P.x -= MOVE_SPD * dt;
+  if (KEY.right) P.x += MOVE_SPD * dt;
+
+  // 왼쪽 벽: 0에서 막힘
+  // 오른쪽 벽: 화면 너비 - 플레이어 너비에서 막힘
+  if (P.x < 0)            P.x = 0;
+  if (P.x > cw - playerW) P.x = cw - playerW;
+
+  // 점프 — vy를 양수(위쪽)로 설정
+  if (KEY.jumpPressed) {
+    KEY.jumpPressed = false;
+    if (P.jumpCount < P.maxJump) {
+      P.vy = (P.jumpCount === 1) ? JUMP_V * 0.82 : JUMP_V;
+      P.onGround = false;
+      P.jumpCount++;
+      sfxJump();
+    }
+  }
+
+  // 중력 — vy를 매 프레임 감소 (아래로 당김)
+  P.vy -= GRAVITY * dt;
+
+  // 위치 업데이트
+  P.y += P.vy * dt;
+
+  // 지면 충돌 — P.y가 0 이하면 착지
+  if (P.y <= 0) {
+    P.y = 0;
+    P.vy = 0;
+    P.onGround = true;
+    P.jumpCount = 0;
+  }
+
+  // 플랫폼 충돌
+  P.onPlat = null;
+  G.objects.forEach(el => {
+    if (el.dataset.type !== 'platform') return;
+    const platX  = parseFloat(el.dataset.gx);
+    const platW  = parseFloat(el.dataset.w);
+    const platY  = parseFloat(el.dataset.gy) - GROUND_H; // 지면 기준 높이
+    const footX  = P.x + P.w / 2;
+
+    if (footX > platX && footX < platX + platW) {
+      // 플레이어가 플랫폼 위를 지나고 아래로 내려오는 중
+      if (P.y >= platY && P.y <= platY + 12 && P.vy <= 0) {
+        P.y        = platY;
+        P.vy       = 0;
+        P.onGround = true;
+        P.jumpCount = 0;
+        P.onPlat   = el;
+      }
+    }
+  });
+
+  // 무적 감소
+  if (P.invincible > 0) P.invincible -= dt;
+}
+
+/* ── 충돌 감지 ── */
+function checkCollisions() {
+  if (P.dead || P.invincible > 0) return;
+
+  // P.y = 지면 기준 높이(bottom), 충돌은 bottom 기준으로 비교
+  // 플레이어 히트박스 (글자보다 약간 작게)
+  const px = P.x + 6;
+  const py = P.y;
+  const pw = P.w - 12;
+  const ph = P.h - 4;
+
+  G.objects.forEach(el => {
+    const type = el.dataset.type;
+    if (type === 'platform') return;
+
+    const ox  = parseFloat(el.dataset.gx) + 6;
+    const ogy = parseFloat(el.dataset.gy);
+    const oy  = ogy - GROUND_H;   // 지면 기준 높이
+    const ow  = parseFloat(el.dataset.w) - 12;
+    const oh  = parseFloat(el.dataset.h) - 4;
+
+    // AABB
+    if (px < ox + ow && px + pw > ox &&
+        py < oy + oh && py + ph > oy) {
+
+      if (type === 'obstacle') {
+        hitObstacle(el);
+      } else if (type === 'item') {
+        collectItem(el);
+      }
+    }
+  });
+}
+
+function hitObstacle(el) {
+  P.invincible = 60;
+  G.lives--;
+  G.combo = 0;
+  comboDisplay.textContent = '';
+
+  spawnParticles(P.x, P.y + GROUND_H, '💥', 4);
+  shakeScreen();
+  sfxHit();
+
+  P.el.style.color = '#aa5050';
+  setTimeout(() => { if (!P.dead) P.el.style.color = '#80e0a8'; }, 500);
+
+  updateHUD();
+  showMsg('충돌!', '#aa5050');
+
+  if (G.lives <= 0) {
+    setTimeout(onGameOver, 400);
+  }
+}
+
+function collectItem(el) {
+  const ch = el.dataset.ch;
+  let pts = 100;
+  let msg = '+100';
+  let col = '#c8a840';
+
+  if (ch === '[도시락]')   { pts = 0;   G.lives = Math.min(G.lives + 1, 5); msg = '🍱 체력 회복!';   col = '#ff6688'; }
+  else if (ch === '[교통카드]') { pts = 200; msg = '💳 +200점!';         col = '#ffdd44'; }
+  else if (ch === '[환승정보]') { pts = 50;  G.time = Math.min(G.time + 4, G.timeMax); msg = '🔵 시간 +4초!'; col = '#6699ff'; }
+  else if (ch === '[비상구]')   { pts = 300; msg = '🟢 +300점!';         col = '#88ff66'; }
+
+  G.combo++;
+  if (G.combo > 1) { pts = Math.floor(pts * (1 + G.combo * 0.2)); msg += ` x${G.combo}COMBO!`; }
+
+  G.score += pts;
+  spawnParticles(parseFloat(el.dataset.gx), parseFloat(el.dataset.gy), ch[1], 5);
+  sfxItem();
+
+  el.remove();
+  G.objects = G.objects.filter(o => o !== el);
+
+  // 콤보 표시
+  if (G.combo > 1) {
+    comboDisplay.textContent = `x${G.combo} COMBO!`;
+    comboDisplay.style.opacity = '1';
+    clearTimeout(G.comboTimer);
+    G.comboTimer = setTimeout(() => {
+      comboDisplay.style.opacity = '0';
+    }, 1200);
+  }
+
+  updateHUD();
+  showMsg(msg, col);
+
+  // 모든 아이템 수집 시 스테이지 클리어 조건 체크
+  checkStageClear();
+}
+
+function checkStageClear() {
+  // 타이머가 남아있고 모든 오브젝트가 처리됐을 때
+  const remainItems = G.objects.filter(o => o.dataset.type === 'item').length;
+  const stg = STAGE_DATA[G.stage];
+  if (G.itemSpawned >= stg.itemCount && remainItems === 0 && G.obstSpawned >= stg.obstacleCount) {
+    onStageClear();
+  }
+}
+
+/* ── 렌더 ── */
+function renderPlayer() {
+  const ch = gameWrap.offsetHeight;
+  const bot = GROUND_H + P.y;
+  P.el.style.left   = P.x + 'px';
+  P.el.style.bottom = bot + 'px';
+
+  // 무적 깜빡임
+  if (P.invincible > 0) {
+    P.el.style.opacity = Math.floor(P.invincible * 0.3) % 2 === 0 ? '0.3' : '1';
+  } else {
+    P.el.style.opacity = '1';
+  }
+}
+
+function renderObjects() {
+  // 이미 position으로 렌더링 중
+}
+
+/* ── 파티클 ── */
+function spawnParticles(x, y, char, count) {
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = char;
+    const dx = (Math.random() - 0.5) * 60;
+    const dy = -(20 + Math.random() * 40);
+    p.style.setProperty('--dx', dx + 'px');
+    p.style.setProperty('--dy', dy + 'px');
+    p.style.left   = x + 'px';
+    p.style.bottom = y + 'px';
+    p.style.color  = `hsl(${Math.random()*60+30}, 80%, 70%)`;
+    canvas.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+/* ── 화면 흔들기 ── */
+function shakeScreen() {
+  gameWrap.classList.remove('shaking');
+  void gameWrap.offsetWidth;
+  gameWrap.classList.add('shaking');
+  gameWrap.addEventListener('animationend', () => gameWrap.classList.remove('shaking'), { once: true });
+}
+
+/* ── 메시지 팝업 ── */
+function showMsg(txt, color = '#80e0a8') {
+  canvas.querySelectorAll('#msg-popup').forEach(e => e.remove());
+  const m = document.createElement('div');
+  m.id = 'msg-popup';
+  m.textContent = txt;
+  m.style.color = color;
+  canvas.appendChild(m);
+  m.addEventListener('animationend', () => m.remove());
+}
+
+/* ── HUD 업데이트 ── */
+function updateHUD() {
+  infoStage.textContent = `STAGE ${G.stage+1} — ${STAGE_DATA[G.stage].name}`;
+  infoScore.textContent = `SCORE: ${G.score}`;
+  const hearts = '❤'.repeat(G.lives) + '♡'.repeat(Math.max(0, 3 - G.lives));
+  infoLives.textContent = hearts;
+}
+
+/* ═══════════════════════════════════════
+   게임 이벤트
+═══════════════════════════════════════ */
+function onTimeUp() {
+  if (G.state !== 'playing') return;
+  G.lives--;
+  updateHUD();
+  if (G.lives <= 0) {
+    onGameOver();
+  } else {
+    showMsg('시간 초과!', '#aa5050');
+    shakeScreen();
+    setTimeout(() => {
+      if (G.state === 'playing') {
+        G.time = G.timeMax;
+        G.spawnTimer = 0;
+        G.objects.forEach(o => o.remove());
+        G.objects = [];
+        G.obstSpawned = 0;
+        G.itemSpawned = 0;
+        G.platSpawned = 0;
+      }
+    }, 800);
+  }
+}
+
+function onStageClear() {
+  if (G.state !== 'playing') return;
+  G.state = 'stageclear';
+
+  // 시간 보너스
+  const timeBonus = Math.floor(G.time * 20);
+  G.score += timeBonus;
+  updateHUD();
+
+  cancelAnimationFrame(G.animFrame);
+
+  setTimeout(() => {
+    if (G.stage >= STAGE_DATA.length - 1) {
+      onGameClear();
+    } else {
+      G.stage++;
+      showStageResult(timeBonus);
+    }
+  }, 600);
+}
+
+function showStageResult(timeBonus) {
+  ovTitle.textContent   = `STAGE ${G.stage} CLEAR!`;
+  ovTitle.style.color   = STAGE_DATA[G.stage - 1].color;
+  ovSub.innerHTML       = `${STAGE_DATA[G.stage-1].name} 통과<br>시간 보너스: +${timeBonus}점`;
+  ovScore.textContent   = `TOTAL: ${G.score}점`;
+  ovAscii.textContent   = `STAGE ${G.stage+1}\n${STAGE_DATA[G.stage].name}\n${STAGE_DATA[G.stage].sub}`;
+  ovStartBtn.textContent = `▶ STAGE ${G.stage+1} 시작`;
+  overlay.classList.remove('hidden');
+}
+
+function onGameOver() {
+  if (G.state === 'gameover') return;
+  G.state = 'gameover';
+  cancelAnimationFrame(G.animFrame);
+
+  P.el.textContent = CHAR.dead;
+  P.el.style.color = '#aa5050';
+  spawnParticles(P.x, GROUND_H + P.y, '×', 6);
+  shakeScreen();
+  sfxDead();
+
+  setTimeout(() => {
+    ovTitle.textContent    = 'GAME OVER';
+    ovTitle.style.color    = '#aa5050';
+    ovSub.innerHTML        = `${STAGE_DATA[G.stage].name}에서 탈락<br>조금만 더 힘내세요!`;
+    ovScore.textContent    = `SCORE: ${G.score}점`;
+    ovAscii.textContent    = ``;
+    ovStartBtn.textContent = '▶ 다시 시작';
+    overlay.classList.remove('hidden');
+  }, 600);
+}
+
+function onGameClear() {
+  G.state = 'clear';
+  cancelAnimationFrame(G.animFrame);
+
+  ovTitle.textContent    = '🎉 ALL CLEAR!';
+  ovTitle.style.color    = '#80e0a8';
+  ovSub.innerHTML        = `6호선 전 구간 완주!<br>봉화산역 도착!`;
+  ovScore.textContent    = `FINAL SCORE: ${G.score}점`;
+  ovAscii.textContent    = [
+    ' 응암 → 역촌 → 불광 → 연신내',
+    ' → 합정 → 이태원 → 봉화산 ✓',
+    '',
+    '   전 구간 탑승 완료!',
+  ].join('\n');
+  ovStartBtn.textContent = '▶ 처음부터';
+  overlay.classList.remove('hidden');
+}
+
+/* ═══════════════════════════════════════
+   Web Audio 사운드
+═══════════════════════════════════════ */
+let _actx = null;
+function actx() {
+  if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_actx.state === 'suspended') _actx.resume();
+  return _actx;
+}
+
+function sfxJump() {
+  try {
+    const c = actx(), now = c.currentTime;
+    const o = c.createOscillator(); o.type = 'square';
+    const g = c.createGain();
+    o.frequency.setValueAtTime(260, now);
+    o.frequency.linearRampToValueAtTime(520, now + 0.08);
+    g.gain.setValueAtTime(0.12, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    o.connect(g); g.connect(c.destination);
+    o.start(now); o.stop(now + 0.16);
+  } catch(e) {}
+}
+
+function sfxItem() {
+  try {
+    const c = actx(), now = c.currentTime;
+    [[880,0],[1046,0.06],[1318,0.12]].forEach(([f,t]) => {
+      const o = c.createOscillator(); o.type = 'sine';
+      const g = c.createGain();
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0, now+t);
+      g.gain.linearRampToValueAtTime(0.13, now+t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, now+t+0.18);
+      o.connect(g); g.connect(c.destination);
+      o.start(now+t); o.stop(now+t+0.2);
+    });
+  } catch(e) {}
+}
+
+function sfxHit() {
+  try {
+    const c = actx(), now = c.currentTime;
+    const buf = c.createBuffer(1, c.sampleRate * 0.15, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * (1 - i/d.length);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 400;
+    const g = c.createGain(); g.gain.value = 0.2;
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start(now);
+  } catch(e) {}
+}
+
+function sfxDead() {
+  try {
+    const c = actx(), now = c.currentTime;
+    const o = c.createOscillator(); o.type = 'sawtooth';
+    const g = c.createGain();
+    o.frequency.setValueAtTime(300, now);
+    o.frequency.linearRampToValueAtTime(60, now + 0.5);
+    g.gain.setValueAtTime(0.2, now);
+    g.gain.linearRampToValueAtTime(0, now + 0.5);
+    o.connect(g); g.connect(c.destination);
+    o.start(now); o.stop(now + 0.52);
+  } catch(e) {}
+}
+
+/* ═══════════════════════════════════════
+   입력 처리
+═══════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  // 스페이스/방향키는 항상 기본동작 막기 (스크롤 방지)
+  if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+  }
+  if (G.state !== 'playing') return;
+  if (e.key === 'ArrowLeft'  || e.key === 'a') KEY.left  = true;
+  if (e.key === 'ArrowRight' || e.key === 'd') KEY.right = true;
+  if ((e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') && !e.repeat) {
+    KEY.jumpPressed = true;
+  }
+  if (e.key === 'Escape') togglePause();
+});
+document.addEventListener('keyup', e => {
+  if (e.key === 'ArrowLeft'  || e.key === 'a') KEY.left  = false;
+  if (e.key === 'ArrowRight' || e.key === 'd') KEY.right = false;
+  if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') KEY.jump = false;
+});
+
+function togglePause() {
+  if (G.state !== 'playing') return;
+  G.paused = !G.paused;
+  if (G.paused) showMsg('— PAUSE —', '#4a6070');
+}
+
+/* ── 터치 ── */
+function setupTouch(btnId, keyName) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+
+  const setKey = (v) => {
+    if (keyName === 'jump') { if (v) KEY.jumpPressed = true; }
+    else KEY[keyName] = v;
+    btn.classList.toggle('pressed', v);
+  };
+
+  btn.addEventListener('touchstart', e => { e.preventDefault(); setKey(true); }, { passive: false });
+  btn.addEventListener('touchend',   e => { e.preventDefault(); setKey(false); }, { passive: false });
+  btn.addEventListener('touchcancel',e => { e.preventDefault(); setKey(false); }, { passive: false });
+  btn.addEventListener('mousedown',  e => { setKey(true); });
+  btn.addEventListener('mouseup',    e => { setKey(false); });
+  btn.addEventListener('mouseleave', e => { setKey(false); });
+}
+
+setupTouch('btn-left',   'left');
+setupTouch('btn-right',  'right');
+setupTouch('touch-jump', 'jump');
+
+/* ═══════════════════════════════════════
+   타이틀 화면
+═══════════════════════════════════════ */
+function showTitle() {
+  G.state  = 'title';
+  G.stage  = 0;
+  G.lives  = 3;
+  G.score  = 0;
+  G.combo  = 0;
+
+  ovTitle.textContent   = 'LINE 6 · PLATFORM RUN';
+  ovTitle.style.color   = '#c05020';
+  ovSub.innerHTML       = [
+    '6호선 승객이 되어 플랫폼을 달려라!',
+    '',
+    '← → 이동 &nbsp; SPACE 점프 (더블점프 가능)',
+    '[★] 아이템 수집 &nbsp; [사] 장애물 회피',
+    '',
+    '6개 역을 통과하면 클리어!',
+  ].join('\n').replace(/\n/g,'<br>');
+  ovScore.textContent   = '';
+  ovAscii.innerHTML = [
+    `<span style="color:#40e0d0">[교통카드] [도시락] [환승정보] [비상구]</span>`,
+    `<span style="color:#cc4444">  [사람] [짐가방] [유모차] [취객!]</span>`,
+    `<span style="color:#3a6080">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>`,
+    `<span style="color:#80e0a8">§</span>`,
+    ``,
+    `<span style="color:#cc4444">■ 빨간색</span> = 장애물 → 피하기!`,
+    `<span style="color:#40e0d0">■ 청록/노란색</span> = 아이템 → 먹기!`,
+  ].join('\n');
+  ovStartBtn.textContent = '▶ 시작하기';
+  overlay.classList.remove('hidden');
+  updateHUD();
+}
+
+ovStartBtn.addEventListener('click', () => {
+  if (G.state === 'gameover' || G.state === 'title') {
+    G.stage = 0; G.lives = 3; G.score = 0; G.combo = 0;
+  }
+  overlay.classList.add('hidden');
+  // 버튼 포커스 해제 — 스페이스가 버튼 클릭으로 가로채이지 않도록
+  ovStartBtn.blur();
+  document.activeElement && document.activeElement.blur();
+  // KEY 초기화
+  KEY.left = false; KEY.right = false;
+  KEY.jumpPressed = false; KEY.jump = false;
+  G.state = 'playing';
+  G.paused = false;
+  init();
+  G.lastTime = performance.now();
+  G.animFrame = requestAnimationFrame(gameLoop);
+});
+
+/* 시작 */
+showTitle();
+</script>
+</body>
+</html>

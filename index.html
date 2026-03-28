@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#070b0e">
+<title>서울 지하철 6호선 — 탈출 어드벤처</title>
+<link rel="stylesheet" href="css/style.css?v=20260327k">
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<div id="header">
+  <div id="header-left">
+    <div id="header-title">서울 지하철 6호선</div>
+    <div id="header-sub">LINE 6 · SURVIVAL ADVENTURE</div>
+  </div>
+  <div id="header-right">
+    <button id="theme-btn" title="라이트/다크 테마 전환">🌙</button>
+    <button id="save-btn" class="corner-btn-inline" title="세이브 QR">💾</button>
+    <button id="fast-btn" title="빨리보기">⚡ 빨리보기</button>
+    <div id="header-ep"></div>
+  </div>
+</div>
+
+<!-- 모바일 탭 바 -->
+<div id="mobile-tabs" role="tablist">
+  <button class="mob-tab active" id="tab-game" role="tab"
+          aria-selected="true" aria-controls="game">
+    📖 스토리
+    <span class="tab-badge" id="badge-game"></span>
+  </button>
+  <button class="mob-tab" id="tab-train" role="tab"
+          aria-selected="false" aria-controls="train-panel">
+    🚇 열차뷰
+    <span class="tab-badge" id="badge-train"></span>
+  </button>
+  <button class="mob-tab" id="tab-log" role="tab"
+          aria-selected="false" aria-controls="train-panel">
+    📋 로그
+    <span class="tab-badge" id="badge-log"></span>
+  </button>
+</div>
+
+<!-- 노선도 미니맵 -->
+<div id="minimap-wrap" style="display:none;">
+  <div id="minimap-inner">
+    <div id="minimap-label">ROUTE MAP · LINE 6 · 응암 ─────────────── 봉화산</div>
+    <div id="minimap"></div>
+  </div>
+</div>
+
+<!-- 메인 2컬럼 레이아웃 -->
+<div id="layout">
+
+  <!-- 왼쪽: 지하철 상시 패널 -->
+  <div id="train-panel" role="tabpanel" aria-labelledby="tab-train">
+    <div id="train-panel-header">
+      <div id="train-panel-title">🚇 LIVE · TRAIN VIEW</div>
+      <div id="train-panel-status">— 대기 중</div>
+    </div>
+    <div id="train-viewport">
+      <div id="train-event-overlay"></div>
+    </div>
+    <div id="train-station-info">
+      <div id="tsi-current">
+        <div id="tsi-line-badge">LINE 6</div>
+        <div>
+          <div id="tsi-name">대기 중</div>
+          <div id="tsi-name-en">WAITING</div>
+        </div>
+      </div>
+      <div id="tsi-transfer"></div>
+      <div id="tsi-route-strip"></div>
+    </div>
+    <div id="car-strip"></div>
+    <div id="avatar-wrap" style="padding:10px 12px; border-top:1px solid #152030; background:#040a10; display:flex; align-items:center; gap:12px;">
+      <pre id="avatar-ascii" style="font-family:'Courier New', monospace; font-size:11px; line-height:1.2; color:#80e0a8; margin:0;"></pre>
+      <div id="avatar-dialog" style="flex:1; font-size:11px; color:#b8c8d8; font-family:'Noto Serif KR', monospace; line-height:1.4;">
+        <span id="avatar-name" style="color:#c8a840; font-weight:700; display:block; margin-bottom:2px;"></span>
+        <span id="avatar-msg">대기 중...</span>
+      </div>
+    </div>
+    <div id="train-log">
+      <div id="train-log-title">CABIN LOG</div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 게임 텍스트 -->
+  <div id="game" role="tabpanel" aria-labelledby="tab-game">
+    <div id="stat-bar">
+      <div class="stat-item">❤️ 체력: <span id="st-hp">100</span></div>
+      <div class="stat-item">🧠 정신력: <span id="st-sp">100</span></div>
+      <div class="stat-item">☣️ 감염도: <span id="st-inf">0</span>%</div>
+      <div class="stat-item">🎯 미션: <span id="st-mission">0</span></div>
+      <div class="stat-item">⭐ 점수: <span id="st-score">0</span></div>
+      <div class="stat-item">🚇 이동: <span id="st-move">0</span>역</div>
+      <div class="stat-item" id="st-tod-wrap">
+        🕐 <span id="st-tod">—</span>
+      </div>
+      <div class="stat-item" id="st-item-wrap" style="display:none">
+        🎒 아이템: <span id="st-item">없음</span>
+      </div>
+    </div>
+    <div id="output"></div>
+    <div id="choices"></div>
+    <div id="name-area">
+      <div id="name-row">
+        <input id="name-input" type="text" maxlength="10"
+               placeholder="승객의 이름을 입력하세요"
+               autocomplete="off" spellcheck="false"
+               inputmode="text" enterkeyhint="done">
+        <button id="name-confirm">탑승</button>
+      </div>
+      <div id="name-hint">※ 엔터 또는 탑승 버튼. 비우면 기본값(김도현) 사용.</div>
+    </div>
+    <div id="progress-wrap">
+      <div id="progress-label">STATION LOG</div>
+      <div id="progress"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 공유 결과물 렌더링 컨테이너 (오프스크린) -->
+<div id="share-card-wrap">
+  <pre id="share-card-content"></pre>
+</div>
+
+<!-- 고정 UI 버튼 -->
+<button id="skip-btn" title="텍스트 스킵">SKIP ▸▸</button>
+<button id="map-btn"   class="corner-btn" title="노선도">🗺</button>
+<button id="fs-btn"    class="corner-btn" title="전체화면">⛶</button>
+<button id="sound-btn" class="corner-btn" title="사운드 ON/OFF">🔇</button>
+<button id="share-btn" class="corner-btn" title="결과 캡처">📷</button>
+
+<!-- JS 로드 순서 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="js/engine.js?v=20260328c"></script>
+<script src="js/train.js?v=20260328c"></script>
+<script src="js/stations.js?v=20260328b"></script>
+<script src="js/station_trivia.js?v=20260328b"></script>
+<script src="js/timeofday.js?v=20260328b"></script>
+<script src="js/random_events.js?v=20260328b"></script>
+<script src="js/saveload.js?v=20260328b"></script>
+<script src="js/linemap.js?v=20260328b"></script>
+<script src="js/scenes/intro.js?v=20260328b"></script>
+<script src="js/scenes/station_events.js?v=20260328b"></script>
+<script src="js/scenes/ending.js?v=20260328b"></script>
+<script src="js/main.js?v=20260328b"></script>
+
+</body>
+</html>
