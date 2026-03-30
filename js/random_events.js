@@ -58,10 +58,19 @@ const RANDOM_EVENT_POOL = [
         }],
         ['상대하지 않고 무시한다', async () => {
           await seq([
-            ['고개를 돌렸지만, 그 상대를 가볍게 볼 일이 아니었다. 취객이 어깨를 강하게 후려쳤다.', 'danger', 200],
+            ['고개를 돌렸지만, 그 상대를 가볍게 볼 일이 아니었다. 취객이 어깨를 상하게 후려쳤다.', 'danger', 200],
           ]);
           await modifyStat('health', -15);
         }],
+        ...(G.companions && G.companions.length > 0 ? [[`동행자 ${G.companions[0].name}에게 도와달라고 소리친다`, async () => {
+          const comp = G.companions[0];
+          await seq([
+            [`"${comp.name}! 도와주세요!" 당신의 외침에 그가 취객의 어깨를 밀쳤다.`, 'narrator', 200],
+            [`취객과 ${comp.name}이(가) 엉켜 바닥을 굴렀다.`, 'danger', 500],
+          ]);
+          await modifyStat('sanity', -5);
+          await print(`${comp.name}의 옷이 찢어지고 상처가 났다.`, 'danger');
+        }]] : []),
       ]);
     }
   },
@@ -76,6 +85,28 @@ const RANDOM_EVENT_POOL = [
         ['선반 위에 버려진 검은색 백팩이 있다.', 'narrator', 200],
         ['지퍼 틈 사이로 아찔할 만큼 강렬한 단내가 흘러나온다.', 'danger', 500],
       ]);
+      const compOptions = G.companions && G.companions.length > 0 ? (G.companions.map(c => [`동행자 ${c.name}에게 시킨다`, async () => {
+        await seq([
+          [`${c.name}이(가) 긴장한 표정으로 가방에 손을 뻗는다.`, 'narrator', 200],
+        ]);
+        if (Math.random() < 0.6) {
+           await seq([
+            [`다행히 가방 안에는 구급약이 들어있었다.`, 'life', 200],
+            [`${c.name}이(가) 안도하며 당신에게 건넨다.`, 'narrator', 500],
+          ]);
+          addItem('비상 구급약');
+          await modifyStat('sanity', 5);
+        } else {
+          await seq([
+            [`가방을 열자마자 분홍색 점액이 ${c.name}의 손을 덮쳤다!`, 'death', 200],
+            [`${c.name}이(가) 고통스럽게 비명을 지른다.`, 'danger', 500],
+          ]);
+          await modifyStat('sanity', -20);
+          // 동행자 부상 처리 (여기선 간단히 멘트만)
+          await print(`${c.name}의 팔에 기괴한 반점이 솟아오른다.`, 'danger');
+        }
+      }])) : [];
+
       await choices([
         ['열어본다', async () => {
           if (Math.random() < 0.5) {
@@ -96,6 +127,7 @@ const RANDOM_EVENT_POOL = [
             await modifyStat('sanity', -15);
           }
         }],
+        ...compOptions,
         ['무시한다', async () => {
           await seq([
             ['단내로부터 멀어지기 위해 반대쪽 끝으로 자리를 옮겼다.', 'narrator', 200],
@@ -346,6 +378,15 @@ const RANDOM_EVENT_POOL = [
           await modifyStat('infection', 5);
           markStationDanger(G.currentStation, 3);
         }],
+        ...(G.companions && G.companions.length > 0 ? [[`👥 동행자 ${G.companions[0].name}에게 확인을 맡긴다`, async () => {
+          const comp = G.companions[0];
+          await seq([
+            [`"${comp.name}님, 저분 좀 봐주실 수 있나요?" 당신의 부탁에 그가 다가간다.`, 'narrator', 200],
+            [`그가 남자의 어깨를 흔들자, 남자가 피를 토하며 ${comp.name}의 얼굴에 뿜어냈다!`, 'death', 500],
+          ]);
+          await modifyStat('sanity', -20);
+          await print(`${comp.name}이(가) 비명을 지르며 뒤로 넘어졌다.`, 'danger');
+        }]] : []),
         // 시간초과 기본값
         ['⏰ ...아무것도 하지 않았다', async () => {
           await seq([
@@ -589,6 +630,101 @@ const RANDOM_EVENT_POOL = [
             ['없는 것으로 하자.', 'narrator', 200],
           ]);
           await modifyStat('sanity', -10);
+        }],
+      ]);
+    }
+  },
+
+  /* ── 15. 새로운 만남 (동행자 합류) ── */
+  {
+    id: 're_meet_survivor',
+    tod: 'all', weight: 4,
+    async fn() {
+      const gList = G.companions.map(c => c.gender);
+      const maleCount = gList.filter(g => g === '남성').length;
+      const femaleCount = gList.filter(g => g === '여성').length;
+      
+      // 성비 균형을 맞춘 성별 선택
+      let gender = Math.random() < 0.5 ? '남성' : '여성';
+      if (maleCount > femaleCount) gender = '여성';
+      else if (femaleCount > maleCount) gender = '남성';
+
+      const names = gender === '남성' ? ['박준호', '최현우', '이민형', '정태양'] : ['이지은', '박소윤', '김하늘', '최유리'];
+      const name = names[Math.floor(Math.random() * names.length)];
+      const jobs = ['직장인', '대학생', '공무원', '휴가 나온 군인', '고등학생'];
+      const job = jobs[Math.floor(Math.random() * jobs.length)];
+
+      await seq([
+        ['', 'blank', 0],
+        [`옆 칸의 연결문이 열리며 땀범벅이 된 한 사람이 다급히 넘어온다.`, 'narrator', 200],
+        [`"저기... 제발 부탁이에요. 혼자 있기가 너무 무서워서..."`, 'dialog', 500],
+        [`그는 자신을 ${job} ${name}(이)라고 소개하며 동행을 요청한다.`, 'narrator', 800],
+      ]);
+
+      if (G.companions.length >= 3) {
+        await seq([
+          [`하지만 이미 당신 곁에는 세 명이나 있다. 더 이상은 무리다.`, 'danger', 200],
+          [`그는 실망한 표정으로 다시 옆 칸으로 돌아갔다.`, 'narrator', 500],
+        ]);
+        return;
+      }
+
+      await choices([
+        ['동행을 허락한다', async () => {
+          await seq([
+            [`"정말 감사합니다... 정말로요."`, 'dialog', 200],
+            [`${name}이(가) 당신의 일행에 합류했다.`, 'life', 500],
+          ]);
+          G.companions.push({ name, gender, job, infection: 0 });
+          updateStats();
+          await modifyStat('sanity', 10);
+        }],
+        ['거절하고 내쫓는다', async () => {
+          await seq([
+            [`"이 상황에서 누굴 믿으라고... 미안하지만 각자도생합시다."`, 'narrator', 200],
+            [`그는 절망적인 표정으로 플랫폼 바닥을 향해 고개를 떨궜다.`, 'death', 500],
+          ]);
+          await modifyStat('sanity', -15);
+        }],
+      ]);
+    }
+  },
+
+  /* ── 16. 동행자의 위기 (딜레마) ── */
+  {
+    id: 're_companion_crisis',
+    tod: 'all', weight: 3,
+    async fn() {
+      if (G.companions.length === 0) {
+        // 동행자가 없으면 다른 이벤트로 대체 (재귀 호출 대신 그냥 패스)
+        return await RANDOM_EVENT_POOL.find(e => e.id === 're_rot_smell').fn();
+      }
+
+      const comp = G.companions[Math.floor(Math.random() * G.companions.length)];
+      await seq([
+        ['', 'blank', 0],
+        [`갑자기 ${comp.name}이(가) 가슴을 부여잡으며 거칠게 기침을 토해낸다.`, 'danger', 200],
+        [`그의 마스크 사이로 진득한 단내가 새어 나오기 시작한다.`, 'death', 500],
+        [`"콜록... 아, 아니에요... 그냥 사레들린 거예요..."`, 'dialog', 800],
+      ]);
+
+      await choices([
+        ['진정시키고 끝까지 함께한다', async () => {
+          await seq([
+            [`그를 꽉 안아주며 진정시켰다. 다행히 발작은 멈췄지만, 그의 몸에선 은은한 단내가 계속 난다.`, 'life', 200],
+            [`당신도 그 소용돌이 속에 함께 휘말릴 위험이 크다.`, 'danger', 500],
+          ]);
+          await modifyStat('infection', 15);
+          await modifyStat('sanity', 20);
+        }],
+        ['다음 역에서 하차시킨다 (추방)', async () => {
+          await seq([
+            [`"미안하지만... 다른 승객들을 위해서라도 여기서 내려야겠어요."`, 'narrator', 200],
+            [`${comp.name}은(는) 아무 말 없이 다음 역 플랫폼에 버려졌다. 닫히는 문 너머로 그의 눈망울이 잊히질 않는다.`, 'death', 500],
+          ]);
+          G.companions = G.companions.filter(c => c.name !== comp.name);
+          updateStats();
+          await modifyStat('sanity', -30);
         }],
       ]);
     }

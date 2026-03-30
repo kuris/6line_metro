@@ -333,7 +333,10 @@ async function sceneEnding() {
   const participateRate = eventStations > 0
     ? Math.round((G.missionCount / eventStations) * 100) : 0;
 
-  sfx.ding(0.2);
+  // 동행자 보너스 점수 합산 (명당 5점)
+  const companionBonus = (G.companions || []).length * 5;
+  G.score += companionBonus;
+  sc = G.score;
 
   // 결과 카드
   await printAscii([
@@ -347,12 +350,16 @@ async function sceneEnding() {
     [`  ╠══════════════════════════════╣`, ''],
     [`  ║  총 점수   : ${String(sc).padEnd(16)} ║`, 'hl'],
     [`  ║  미션 완료 : ${String(G.missionCount).padEnd(16)} ║`, ''],
-    [`  ║  이동 역수 : ${String(G.moveCount).padEnd(16)} ║`, ''],
+    [`  ║  생존 동행 : ${String((G.companions||[]).length + '명').padEnd(16)} ║`, 'hl'],
     [`  ║  참여율   : ${String(participateRate + '%').padEnd(16)} ║`, ''],
     [`  ╠══════════════════════════════╣`, ''],
     [`  ║  엔딩: ${ending.grade.padEnd(23)} ║`, 'hl'],
     [`  ╚══════════════════════════════╝`, ''],
   ], 'ascii-done', { rowDelay: 45, label: '// 여정 결과 집계', sound: 'modem' });
+
+  if (companionBonus > 0) {
+    await print(`[축하합니다! 동행자 ${G.companions.length}명 생존 보너스 +${companionBonus}점]`, 'life');
+  }
 
   await new Promise(r => setTimeout(r, 400));
 

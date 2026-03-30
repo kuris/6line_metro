@@ -26,6 +26,8 @@ const ST_ITM    = document.getElementById('st-item');
 const ST_ITM_W  = document.getElementById('st-item-wrap');
 const ST_HANJA  = document.getElementById('st-hanja');
 const ST_HANJA_W= document.getElementById('st-hanja-wrap');
+const ST_COMP     = document.getElementById('st-companion');
+const ST_COMP_W   = document.getElementById('st-companion-wrap');
 const FS_BTN    = document.getElementById('fs-btn');
 const SOUND_BTN = document.getElementById('sound-btn');
 const SHARE_BTN = document.getElementById('share-btn');
@@ -65,6 +67,7 @@ const G = {
   hanjaAttempts: 0,      // 한자 퀴즈(문자 해독) 시도 횟수
   hanjaSuccess:  0,      // 한자 퀴즈 성공 횟수
   hanjaFail:     0,      // 한자 퀴즈 실패 횟수
+  companions:    [],     // 👥 동행자 목록 (최대 3명)
 };
 
 function gn() {
@@ -299,12 +302,23 @@ function updateStats() {
     }
   }
 
-  if (G.inventory.length > 0) {
+  if (G.inventory && G.inventory.length > 0) {
     ST_ITM_W.style.display = '';
     ST_ITM.textContent = G.inventory.join(', ');
   } else {
     ST_ITM_W.style.display = 'none';
   }
+
+  // 동행자 UI 업데이트
+  if (ST_COMP && ST_COMP_W) {
+    if (G.companions && G.companions.length > 0) {
+      ST_COMP_W.style.display = '';
+      ST_COMP.textContent = G.companions.map(c => c.name).join(', ');
+    } else {
+      ST_COMP_W.style.display = 'none';
+    }
+  }
+
   updateAvatar();
   
   if (typeof autoSave === 'function') autoSave();
