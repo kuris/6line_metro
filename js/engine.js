@@ -319,6 +319,14 @@ async function modifyStat(type, amount, skipCheck = false) {
     G.sanity = Math.max(0, Math.min(100, G.sanity + amount));
     if (amount < 0) await print(`[-${Math.abs(amount)} 정신력 감소]`, 'death', 100);
     else if (amount > 0) await print(`[+${amount} 정신력 회복]`, 'life', 100);
+
+    // 트리거 #3: 공포 한계점 컷인
+    if (G.sanity <= 40 && !G.flags.low_sanity_img && typeof showEventImage === 'function') {
+      G.flags.low_sanity_img = true;
+      let fImg = 'images/chracter/fear_girl.png';
+      if (Math.random() < 0.5) fImg = 'images/chracter/fear_boy.png';
+      await showEventImage(fImg, '정신이 아득해진다...', 1200, { sound: 'heartbeat', styleClass: 'style-fear' });
+    }
   } else if (type === 'infection') {
     G.infection = Math.max(0, Math.min(100, G.infection + amount));
     if (amount > 0) await print(`[+${amount}% 감염도 증가]`, 'death', 100);
@@ -469,57 +477,60 @@ SOUND_BTN.addEventListener('click', () => {
 });
 
 const sfx = {
-  tick(vol = 0.05) {
+  _audioElements: {},
+
+  playFile(filename, vol = 1.0, loop = false) {
+    if (!soundOn) return null;
+    try {
+      const a = new Audio('audio/' + filename);
+      a.volume = vol;
+      a.loop = loop;
+      a.play().catch(e => console.warn('Audio File Play Blocked:', e));
+      return a;
+    } catch(e) { return null; }
+  },
+
+  tick(vol = 0.3) {
     if (!soundOn) return;
     tickCount++;
     if (tickCount % 2 !== 0) return;
-    try {
-      const c = getCtx();
-      const buf = c.createBuffer(1, Math.floor(c.sampleRate * 0.014), c.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < d.length; i++)
-        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
-      const src  = c.createBufferSource(); src.buffer = buf;
-      const filt = c.createBiquadFilter(); filt.type = 'highpass'; filt.frequency.value = 1600;
-      const gain = c.createGain(); gain.gain.value = vol;
-      src.connect(filt); filt.connect(gain); gain.connect(c.destination); src.start();
-    } catch(e) {}
+
+    if (!this._audioElements['typing']) {
+      this._audioElements['typing'] = new Audio('audio/typing.wav');
+      this._audioElements['typing'].volume = vol;
+    }
+    const a = this._audioElements['typing'];
+    // Restart audio block to allow rapid repeated playing
+    if (a.readyState >= 2) {
+      a.currentTime = 0;
+      a.play().catch(e=>{});
+    }
   },
 
-  /* 지하철 출발/도착 차임 */
-  chime(vol = 0.18) {
+  /* подзем카 출발/도착 차임 */
+  chime(vol = 0.5) { return this.playFile('station_chime.mp3', vol); },
+
+  /* 문 열림/닫힘 */
+  door(open = true, vol = 0.6) { return this.playFile('subway_doors.mp3', vol); },
+
+  /* 지하철 주행 소음 (루프) */
+  startRumble(vol = 0.3) {
+    this.stopRumble();
     if (!soundOn) return;
-    try {
-      const c = getCtx(), now = c.currentTime;
-      [[523.25,0],[659.25,0.12],[783.99,0.24],[1046.5,0.38]].forEach(([freq,st]) => {
-        const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
-        const g = c.createGain();
-        g.gain.setValueAtTime(0, now+st);
-        g.gain.linearRampToValueAtTime(vol*(1-st*0.4), now+st+0.015);
-        g.gain.exponentialRampToValueAtTime(0.001, now+st+1.1);
-        o.connect(g); g.connect(c.destination); o.start(now+st); o.stop(now+st+1.2);
-      });
-    } catch(e) {}
+    this._audioElements['ride'] = this.playFile('subway_ride.mp3', vol, true);
+  },
+  stopRumble() {
+    const a = this._audioElements['ride'];
+    if (a) {
+      a.pause();
+      a.currentTime = 0;
+      this._audioElements['ride'] = null;
+    }
   },
 
-  /* 지하철 주행 소음 */
-  rumble(vol = 0.08) {
-    if (!soundOn) return;
-    try {
-      const c = getCtx(), now = c.currentTime, dur = 1.0;
-      [55, 80, 110].forEach((freq, i) => {
-        const o = c.createOscillator(); o.type = 'sawtooth';
-        o.frequency.setValueAtTime(freq + Math.random()*10, now);
-        const g = c.createGain();
-        g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(vol * (1 - i*0.2), now + 0.1);
-        g.gain.linearRampToValueAtTime(0, now + dur);
-        const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 300;
-        o.connect(lp); lp.connect(g); g.connect(c.destination);
-        o.start(now); o.stop(now + dur + 0.05);
-      });
-    } catch(e) {}
-  },
+  /* 추가 효과음 */
+  glitch(vol = 0.6) { return this.playFile('glitch.wav', vol); },
+  heartbeat(vol = 0.8) { return this.playFile('heartbeat.wav', vol); },
 
   /* ★ 지하철 이동 투둥투둥 사운드
    * "투" = 높은 충격 노이즈 + 오실레이터 피치다운
@@ -607,22 +618,7 @@ const sfx = {
     } catch(e) { console.warn('tudung error:', e); }
   },
 
-  /* 문 열림/닫힘 */
-  door(open = true, vol = 0.14) {
-    if (!soundOn) return;
-    try {
-      const c = getCtx(), now = c.currentTime;
-      const freqStart = open ? 800 : 1200;
-      const freqEnd   = open ? 300 : 500;
-      const o = c.createOscillator(); o.type = 'square';
-      o.frequency.setValueAtTime(freqStart, now);
-      o.frequency.linearRampToValueAtTime(freqEnd, now + 0.25);
-      const g = c.createGain();
-      g.gain.setValueAtTime(vol, now);
-      g.gain.linearRampToValueAtTime(0, now + 0.3);
-      o.connect(g); g.connect(c.destination); o.start(now); o.stop(now + 0.32);
-    } catch(e) {}
-  },
+
 
   /* 경보/위험 */
   alarm(vol = 0.2) {
@@ -1147,4 +1143,47 @@ function showCaptureResultModal(imgData) {
   // fade-in
   setTimeout(() => overlay.style.opacity = '1', 10);
   if (typeof sfx !== 'undefined' && sfx.ding) sfx.ding(0.5);
+}
+
+// ──────────────────────────────────────────
+// 이벤트 컷인 이미지 오버레이 연출
+// ──────────────────────────────────────────
+function showEventImage(src, text = '', duration = 1600, options = {}) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'event-image-overlay';
+    if (options.styleClass) overlay.classList.add(options.styleClass);
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'event-image';
+
+    overlay.appendChild(img);
+
+    if (text) {
+      const caption = document.createElement('div');
+      caption.className = 'event-image-caption';
+      caption.innerHTML = text;
+      overlay.appendChild(caption);
+    }
+    
+    document.body.appendChild(overlay);
+
+    if (options.sound && sfx[options.sound]) sfx[options.sound](options.volume || 1.0);
+
+    // Fade-in trigger
+    requestAnimationFrame(() => {
+      // Force repaint
+      void overlay.offsetWidth;
+      overlay.classList.add('show');
+    });
+
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      setTimeout(() => {
+        overlay.remove();
+        resolve();
+      }, 400); 
+    }, duration);
+  });
 }

@@ -78,6 +78,31 @@ async function sceneNextStation(nextIdx) {
   TrainPanel.setState(prevSt ? prevSt.trainState : 'running');
   await new Promise(r => setTimeout(r, 500));
 
+  // ── 오디오/이미지 컷인 연출 (역 도착) ──
+  if (typeof sfx !== 'undefined' && sfx.chime) sfx.chime(0.5);
+
+  const imgFname = (typeof STATION_IMAGES !== 'undefined') ? STATION_IMAGES[st.name] : null;
+  const flagKey = 'img_' + st.id;
+  
+  // 최초 진입 시 특정 역 100%, 일반 역 30% 확률로 컷인 발동
+  if (imgFname && !G.flags[flagKey]) {
+    const isAnchor = ['보문', '합정', '삼각지', '동묘앞', '연신내'].includes(st.name);
+    if (isAnchor || Math.random() < 0.3) {
+      G.flags[flagKey] = true;
+      const msgs = [
+        `[관측 기록 복원] 마지막 목격 위치: ${st.name}`,
+        `[오염된 아카이브 읽는 중] ...무언가 ${st.name} 플랫폼을 헤매고 있습니다.`,
+        `(플래시백) 찰나의 흔들림 속에서 ${st.name}의 풍경이 망막에 새겨진다.`,
+        `익숙한 ${st.name}역. 하지만 시계의 초침이 거꾸로 돌고 있다.`
+      ];
+      const text = msgs[Math.floor(Math.random() * msgs.length)];
+      if (typeof showEventImage === 'function') {
+        // playArrival과 비동기 병렬 실행을 원치 않으면 await 유지, 병렬 원하면 await 제거하지만 컷인 느낌을 위해 await 유지.
+        await showEventImage('images/subway/' + imgFname, text, 1400, { sound: 'glitch', styleClass: 'style-cctv' });
+      }
+    }
+  }
+
   await TrainPanel.playArrival(st.name, null);
   TrainPanel.updateStationInfo(st, STATIONS, nextIdx);
   updateProgress(STATIONS, nextIdx);

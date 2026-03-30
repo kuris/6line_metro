@@ -388,8 +388,13 @@ const TrainPanel = (() => {
         updateCarStrip();
         // 7호차 이동 시 이상 현상 트리거
         if (newCar === 7 && typeof print !== 'undefined') {
-          G.flags.entered_car7 = true;
-          print(`[${prev}호차 → 7호차로 이동했다. 주위가 지나치게 조용하다.]`, 'danger').then(() => {
+          print(`[${prev}호차 → 7호차로 이동했다. 주위가 지나치게 조용하다.]`, 'danger').then(async () => {
+            if (!G.flags.girl_seen && typeof showEventImage === 'function') {
+              G.flags.girl_seen = true;
+              let gImg = 'images/chracter/anxious_girl.png';
+              if (Math.random() > 0.5) gImg = 'images/chracter/normal_girl.png';
+              await showEventImage(gImg, '"...여긴 오면 안 되는 곳인데."', 1500, { sound: 'glitch', styleClass: 'style-ghost' });
+            }
             if (typeof modifyStat !== 'undefined') modifyStat('sanity', -5, true);
           });
         } else if (typeof print !== 'undefined') {
@@ -436,26 +441,26 @@ const TrainPanel = (() => {
   async function playArrival(stationName, cb) {
     setState('arriving', stationName);
     addLog(`${stationName} 도착`, 'new');
-    sfx.chime();
+    if (typeof sfx !== 'undefined' && sfx.stopRumble) sfx.stopRumble();
     showOverlay(`⊡ ${stationName} — 문이 열립니다`, 2500);
     await _delay(1200);
     setState('boarding');
-    sfx.door(true);
+    if (typeof sfx !== 'undefined' && sfx.door) sfx.door(true, 0.4);
     addLog('문 열림', 'info');
     await _delay(800);
     if (cb) cb();
   }
 
   async function playDepart(cb) {
-    sfx.door(false);
+    if (typeof sfx !== 'undefined' && sfx.door) sfx.door(false, 0.4);
     addLog('문 닫힘 — 출발', 'info');
     showOverlay('▶ 출발합니다', 1500);
     await _delay(600);
     // playDepart 경로임을 표시 → setState 내부에서 중복 재생 방지
     setState._fromDepart = true;
     setState('running');
-    // 투둥투둥 지하철 달리는 사운드 (3.5초)
-    if (typeof sfx !== 'undefined') sfx.tudung(3.5);
+    // 백그라운드 지하철 달리는 사운드 루프
+    if (typeof sfx !== 'undefined' && sfx.startRumble) sfx.startRumble(0.2);
     if (cb) cb();
   }
 
