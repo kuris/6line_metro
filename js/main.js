@@ -200,7 +200,7 @@ if (SAVE_BTN) {
 }
 
 // ────────────────────────────────
-//  초기화 — URL ?save= 감지 후 분기
+//  초기화 — URL ?save= 및 로컬스토리지 자동저장 감지 후 분기
 // ────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
   TrainPanel.init();
@@ -212,19 +212,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     switchTab('game');
   }
 
-  // URL에 ?save= 파라미터가 있으면 세이브 로드 시도
-  console.log('[main] DOMContentLoaded, href:', window.location.href);
-  const _urlParams = new URLSearchParams(window.location.search);
-  const _saveCode  = _urlParams.get('save');
-  console.log('[main] saveCode:', _saveCode ? '있음' : '없음');
-
-  if (_saveCode) {
-    const saveData = await checkSaveParam();
-    if (saveData) {
-      await loadSaveData(saveData);
-    } else {
-      sceneIntro();
-    }
+  // 자동저장 혹은 URL 세이브를 가져온다.
+  const saveData = await checkAutoSaveOrParam();
+  if (saveData) {
+    await loadSaveData(saveData);
   } else {
     sceneIntro();
   }

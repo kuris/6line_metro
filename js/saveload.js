@@ -7,7 +7,7 @@
 'use strict';
 
 const GAME_URL    = 'https://bbkjhdeq.gensparkspace.com/';
-const SAVE_VER    = '2';   // 포맷 버전 (timeOfDay 필드 추가)
+const SAVE_VER    = '3';   // 포맷 버전 (해독률 필드 추가)
 
 /* ──────────────────────────────────────────
    인코딩 / 디코딩
@@ -35,6 +35,9 @@ function saveEncode() {
     inv: invIdx,
     f:   flagStr,
     tod: G.timeOfDay || 'noon',
+    ha:  G.hanjaAttempts || 0,
+    hs:  G.hanjaSuccess || 0,
+    hf:  G.hanjaFail || 0,
   };
 
   // 체크섬 (간단한 위변조 감지)
@@ -92,6 +95,9 @@ function saveDecode(b64) {
       missionCount:    payload.m   ?? 0,
       moveCount:       payload.mv  ?? 0,
       timeOfDay:       payload.tod || 'noon',
+      hanjaAttempts:   payload.ha  ?? 0,
+      hanjaSuccess:    payload.hs  ?? 0,
+      hanjaFail:       payload.hf  ?? 0,
       inventory,
       flags,
     };
@@ -155,6 +161,7 @@ function showSaveModal() {
         ${todLabel ? `<span>🕐 ${todLabel}</span>` : ''}
         <span>⭐ ${G.score}점</span>
         <span>🎯 미션 ${G.missionCount}</span>
+        ${G.hanjaAttempts > 0 ? `<span>👁️ 해독률 ${G.hanjaSuccess}/${G.hanjaAttempts}</span>` : ''}
       </div>
 
       <div id="save-qr-wrap"></div>
@@ -250,14 +257,33 @@ function showSaveModal() {
 }
 
 /* ──────────────────────────────────────────
-   URL ?save= 파라미터 감지 → 자동 로드
+   자동 저장
+   ────────────────────────────────────────── */
+function autoSave() {
+  if (G.currentStation >= 0) {
+    const code = saveEncode();
+    if (code) {
+      localStorage.setItem('line6_autosave', code);
+    }
+  }
+}
+
+/* ──────────────────────────────────────────
+   URL ?save= 또는 로컬 스토리지 자동저장 감지
    DOMContentLoaded 이전에 호출 가능
    ────────────────────────────────────────── */
-function checkSaveParam() {
+function checkAutoSaveOrParam() {
   console.log('[save] URL search:', window.location.search);
   const params = new URLSearchParams(window.location.search);
-  const code   = params.get('save');
-  console.log('[save] code found:', !!code, code ? code.substring(0,20)+'...' : 'none');
+  let code     = params.get('save');
+  
+  if (!code) {
+    code = localStorage.getItem('line6_autosave');
+    console.log('[save] auto-save code found:', !!code);
+  } else {
+    console.log('[save] URL code found:', !!code, code ? code.substring(0,20)+'...' : 'none');
+  }
+
   if (!code) return false;
 
   const data = saveDecode(code);
@@ -286,7 +312,9 @@ function checkSaveParam() {
           <div>🚇 ${stName} · ${dirLabel}</div>
           <div>🕐 ${(typeof TIME_OF_DAY !== 'undefined' && TIME_OF_DAY[data.timeOfDay])
             ? TIME_OF_DAY[data.timeOfDay].label : data.timeOfDay}</div>
-          <div>⭐ ${data.score}점 · 🎯 미션 ${data.missionCount} · 이동 ${data.moveCount}역</div>
+          <div>⭐ ${data.score}점 · 🎯 미션 ${data.missionCount} · 이동 ${data.moveCount}역
+               ${data.hanjaAttempts > 0 ? ` · 👁️ 해독률 ${data.hanjaSuccess}/${data.hanjaAttempts}` : ''}
+          </div>
           ${data.inventory.length ? `<div>🎒 ${data.inventory.join(', ')}</div>` : ''}
         </div>
         <div id="save-modal-desc" style="text-align:center">
@@ -311,6 +339,7 @@ function checkSaveParam() {
       overlay.remove();
       const clean = window.location.pathname;
       window.history.replaceState({}, '', clean);
+      localStorage.removeItem('line6_autosave');
       resolve(null);
     };
   });
@@ -331,6 +360,9 @@ async function loadSaveData(data) {
   G.missionCount   = data.missionCount;
   G.moveCount      = data.moveCount;
   G.timeOfDay      = data.timeOfDay || 'noon';
+  G.hanjaAttempts  = data.hanjaAttempts || 0;
+  G.hanjaSuccess   = data.hanjaSuccess || 0;
+  G.hanjaFail      = data.hanjaFail || 0;
   G.inventory      = data.inventory;
   G.flags          = data.flags;
 

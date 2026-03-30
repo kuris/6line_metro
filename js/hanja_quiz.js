@@ -60,7 +60,7 @@ async function maybeRunHanjaQuiz(st) {
   // 한자가 없거나 보너스가 0인 곳(순우리말, 외래어 등)은 스킵 (퀴즈 생성 애매함)
   if (!data || data.hanja === "-" || data.sanityBonus <= 0 || data.meaning === "순우리말") return false;
 
-  TrainPanel.addLog(`${st.name} — 한자 퀴즈 알림`, 'info');
+  TrainPanel.addLog(`[승객 식별 제어] 문자 해독 모듈 가동`, 'warn');
   sfx.modem();
   
   let options = [{ text: `${data.meaning}`, correct: true }];
@@ -112,39 +112,45 @@ async function maybeRunHanjaQuiz(st) {
         label,
         async () => {
           if (opt.correct) {
+            G.hanjaAttempts++;
+            G.hanjaSuccess++;
             G.sanity = Math.min(100, G.sanity + data.sanityBonus);
             updateStats();
-            TrainPanel.addLog('한자 의미를 기억해냈다', 'life');
+            TrainPanel.addLog('[문자 해독 승인] 출구 인식 허가', 'life');
             sfx.item();
             await seq([
               [`맞아, ${data.hanja} (${data.meaning}).`, 'highlight', 200],
-              [`${data.hint}라는 뜻이었지.`, 'narrator', 500],
-              ['알고 있으면 덜 무섭다. 확실히 기분이 좀 나아진다.', 'result', 800],
+              [`${data.hint}라는 의미지. 출구 방향이 읽히기 시작했다.`, 'narrator', 500],
+              ['문자를 이해하자 눈앞의 표지판이 더 이상 낯설지 않다. 안도감이 든다.', 'result', 800],
               [`+${data.sanityBonus} 정신력 회복`, 'life', 1100],
               ['', 'blank', 1300]
             ]);
             resolve(true);
           } else if (opt.isGiveUp) {
+            G.hanjaAttempts++;
+            G.hanjaFail++;
             G.sanity = Math.max(0, G.sanity - 3);
             updateStats();
-            TrainPanel.addLog('의미를 전혀 알지 못한다', 'warn');
+            TrainPanel.addLog('[해독 실패] 대체 경로 탐색 불가', 'warn');
             sfx.boom(0.1);
             await seq([
               ['모르겠다. 애초에 한자를 잘 아는 것도 아니었고.', 'narrator', 200],
-              ['이 역에 대해 아는 게 아무것도 없다는 데서 오는 미지의 불안감.', 'death', 500],
+              ['당신은 아직 이 역의 문자를 온전히 읽을 수 없다. 거대한 구조물이 나를 거부하는 느낌.', 'death', 500],
               ['-3 정신력 감소', 'death', 800],
               ['', 'blank', 1000]
             ]);
             resolve(true);
           } else {
+            G.hanjaAttempts++;
+            G.hanjaFail++;
             G.sanity = Math.max(0, G.sanity - 3);
             updateStats();
-            TrainPanel.addLog('잘못된 기억', 'warn');
+            TrainPanel.addLog('[해독 실패] 대체 경로 탐색 불가', 'warn');
             sfx.boom(0.1);
             await seq([
               [`${opt.text}... 였던가?`, 'narrator', 200],
-              ['아니, 무언가 틀린 것 같다. 찝찝한 직감이 든다.', 'death', 500],
-              ['잘못된 확신은 오히려 불안감을 키운다.', 'death', 800],
+              ['아니, 문자가 뒤틀려 보인다. 표지판이 의미 없는 기호로 부서진다.', 'death', 500],
+              ['잘못된 해독은 오히려 생존 본능을 교란시킨다.', 'death', 800],
               ['-3 정신력 감소', 'death', 1100],
               ['', 'blank', 1300]
             ]);

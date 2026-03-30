@@ -24,6 +24,8 @@ const ST_SCR    = document.getElementById('st-score');
 const ST_MOV    = document.getElementById('st-move');
 const ST_ITM    = document.getElementById('st-item');
 const ST_ITM_W  = document.getElementById('st-item-wrap');
+const ST_HANJA  = document.getElementById('st-hanja');
+const ST_HANJA_W= document.getElementById('st-hanja-wrap');
 const FS_BTN    = document.getElementById('fs-btn');
 const SOUND_BTN = document.getElementById('sound-btn');
 const SHARE_BTN = document.getElementById('share-btn');
@@ -60,6 +62,9 @@ const G = {
   playerItem:   '',      // 소지품
   currentCar:    4,      // 현재 탑승 호차 (1~7)
   stationDanger: {},     // { [stationIdx]: 위험레벨 0~3 }
+  hanjaAttempts: 0,      // 한자 퀴즈(문자 해독) 시도 횟수
+  hanjaSuccess:  0,      // 한자 퀴즈 성공 횟수
+  hanjaFail:     0,      // 한자 퀴즈 실패 횟수
 };
 
 function gn() {
@@ -284,6 +289,16 @@ function updateStats() {
   ST_MSN.textContent = G.missionCount;
   ST_SCR.textContent = G.score;
   ST_MOV.textContent = G.moveCount;
+
+  if (ST_HANJA && ST_HANJA_W) {
+    if (G.hanjaAttempts > 0) {
+      ST_HANJA_W.style.display = '';
+      ST_HANJA.textContent = `${G.hanjaSuccess}/${G.hanjaAttempts}`;
+    } else {
+      ST_HANJA_W.style.display = 'none';
+    }
+  }
+
   if (G.inventory.length > 0) {
     ST_ITM_W.style.display = '';
     ST_ITM.textContent = G.inventory.join(', ');
@@ -291,6 +306,8 @@ function updateStats() {
     ST_ITM_W.style.display = 'none';
   }
   updateAvatar();
+  
+  if (typeof autoSave === 'function') autoSave();
 }
 
 async function modifyStat(type, amount, skipCheck = false) {
