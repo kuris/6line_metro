@@ -1656,3 +1656,92 @@ input:focus-visible {
   0% { opacity: 1; }
   100% { opacity: 0; }
 }
+/* ═══════════════════════════════════════════════════
+   HORROR VISUAL ENGINE (Overhaul)
+   — 모니터가 피를 흘리고 시야가 뒤틀리는 극한의 연출
+   ═══════════════════════════════════════════════════ */
+
+/* 1. 혈흔 비네팅 (Vignette) */
+#horror-vignette {
+  position: fixed; inset: 0;
+  background: radial-gradient(circle, transparent 40%, rgba(60, 0, 0, 0.5) 75%, rgba(20, 0, 0, 0.9) 100%);
+  pointer-events: none; z-index: 10000;
+  opacity: 0; transition: opacity 2s ease-in-out;
+}
+#horror-vignette.active { opacity: 1; animation: bloodPulse 6s infinite alternate; }
+
+@keyframes bloodPulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.05); opacity: 1; }
+}
+
+/* 2. 필름 그레인 & 노이즈 (Noise) */
+#horror-noise {
+  position: fixed; inset: 0;
+  background: url("https://www.transparenttextures.com/patterns/carbon-fibre.png"); /* 임시 텍스처 */
+  opacity: 0; pointer-events: none; z-index: 10001;
+  mix-blend-mode: overlay;
+}
+#horror-noise.active { opacity: 0.15; animation: noiseJitter 0.1s infinite; }
+
+@keyframes noiseJitter {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(-1px, 2px); }
+  50% { transform: translate(2px, -1px); }
+  75% { transform: translate(-2px, -1px); }
+  100% { transform: translate(1px, 1px); }
+}
+
+/* 3. 혈흔 흘러내림 (Blood Drip System) */
+#horror-blood-layer {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 10002;
+  overflow: hidden;
+}
+
+.blood-drop {
+  position: absolute; top: -10px;
+  width: 3px; background: #600000;
+  border-radius: 0 0 5px 5px;
+  filter: blur(1px);
+  opacity: 0.8;
+  box-shadow: 0 0 5px #300000;
+}
+
+.blood-drop.drip {
+  animation: bloodDripAnim forwards linear;
+}
+
+@keyframes bloodDripAnim {
+  0% { height: 0; transform: translateY(0); opacity: 0.8; }
+  20% { height: 40px; }
+  100% { height: 200px; transform: translateY(110vh); opacity: 0.4; }
+}
+
+.blood-splatter {
+  position: absolute;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(100,0,0,0.6) 0%, transparent 70%);
+  filter: blur(15px);
+  pointer-events: none;
+  opacity: 0; animation: splatterFade 4s forwards;
+}
+
+@keyframes splatterFade {
+  0% { opacity: 0; transform: scale(0.5); }
+  10% { opacity: 0.8; transform: scale(1.1); }
+  100% { opacity: 0.3; transform: scale(1.3); }
+}
+
+/* 4. 화면 글리치 (Screen Glitch) */
+.flash-red { background: rgba(180, 0, 0, 0.4) !important; animation: flashHit 0.3s forwards; }
+@keyframes flashHit {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+#horror-flash-layer {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 10005;
+  opacity: 0;
+}

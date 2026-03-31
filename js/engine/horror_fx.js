@@ -1,69 +1,110 @@
 /* ═══════════════════════════════════════════════════
    engine/horror_fx.js
-   호러 시각 연출 엔진 (Glitch, Red-out, Shake)
+   호러 시각 연출 엔진 (Blood-drip, Noise, Vignette)
    — AudioHorror와 연동되어 시너지를 냅니다.
    ═══════════════════════════════════════════════════ */
 
 'use strict';
 
-class HorrorFX {
+class HorrorFXEngine {
   constructor() {
-    this.overlay = null;
-    this.createOverlay();
+    this.vignette = document.getElementById('horror-vignette');
+    this.noise = document.getElementById('horror-noise');
+    this.bloodLayer = document.getElementById('horror-blood-layer');
+    this.flashLayer = document.getElementById('horror-flash-layer');
+    this.bloodInterval = null;
   }
 
-  // 붉은색 오버레이 레이어 생성
-  createOverlay() {
-    if (document.getElementById('horror-overlay')) return;
-    this.overlay = document.createElement('div');
-    this.overlay.id = 'horror-overlay';
-    this.overlay.className = 'fx-red-out';
-    document.body.appendChild(this.overlay);
+  // 1. 시야 압박 (Vignette) 강도 조절
+  setVignette(active = true) {
+    if (this.vignette) {
+      this.vignette.classList.toggle('active', active);
+    }
   }
 
-  // 화면 전체를 붉게 섬광 (Red Flash)
-  flashRed(duration = 1000) {
-    if (!this.overlay) this.createOverlay();
+  // 2. 전파 노이즈 (Noise) 강도 조절
+  setNoise(active = true) {
+    if (this.noise) {
+      this.noise.classList.toggle('active', active);
+    }
+  }
+
+  // 3. 혈흔 흘러내림 시작 (Blood Drip)
+  startBloodDrip(intensity = 500) {
+    if (this.bloodInterval) clearInterval(this.bloodInterval);
     
-    this.overlay.classList.add('show');
-    if (window.AudioHorror) window.AudioHorror.playMoan(); // 소름 끼치는 소리 동반
+    this.bloodInterval = setInterval(() => {
+      this.spawnBloodDrop();
+    }, intensity);
+  }
+
+  stopBloodDrip() {
+    if (this.bloodInterval) clearInterval(this.bloodInterval);
+    this.bloodInterval = null;
+  }
+
+  // 개별 핏방울 생성
+  spawnBloodDrop() {
+    if (!this.bloodLayer) return;
+    const drop = document.createElement('div');
+    drop.className = 'blood-drop drip';
     
+    // 무작위 위치 및 크기
+    const x = Math.random() * 100;
+    const width = 1 + Math.random() * 4;
+    const duration = 2 + Math.random() * 8;
+    
+    drop.style.left = `${x}%`;
+    drop.style.width = `${width}px`;
+    drop.style.animationDuration = `${duration}s`;
+    
+    this.bloodLayer.appendChild(drop);
+    
+    // 애니메이션 종료 후 제거
     setTimeout(() => {
-      this.overlay.classList.remove('show');
-    }, duration);
+      drop.remove();
+    }, duration * 1000);
   }
 
-  // 화면 글리치 및 흔들림 (Jump Scare 연출용)
-  glitch(duration = 500) {
-    const layout = document.getElementById('layout');
-    if (!layout) return;
+  // 4. 강렬한 혈성 섬광 (Flash Blood)
+  flashBlood(duration = 1000) {
+    if (!this.flashLayer) return;
+    
+    this.flashLayer.classList.add('flash-red');
+    if (window.AudioHorror) window.AudioHorror.playMoan();
 
-    layout.classList.add('fx-glitch', 'fx-shake');
-    if (window.AudioHorror) {
-        window.AudioHorror.playGayageumNote(220); // 날카로운 노음
-        window.AudioHorror.playMoan();
+    // 일시적으로 핏방울 대량 생성
+    for(let i=0; i<15; i++) {
+        setTimeout(() => this.spawnBloodDrop(), i * 50);
     }
 
     setTimeout(() => {
-      layout.classList.remove('fx-glitch', 'fx-shake');
+      this.flashLayer.classList.remove('flash-red');
     }, duration);
   }
 
-  // 색상 반전 (강렬한 불쾌감 연출)
-  invert(duration = 300) {
-    document.body.classList.add('fx-invert');
-    setTimeout(() => {
-      document.body.classList.remove('fx-invert');
-    }, duration);
+  // 5. 글리치 및 진동 (기존 기능 유지)
+  glitch(duration = 500) {
+    const layout = document.getElementById('layout');
+    if (layout) {
+      layout.classList.add('fx-glitch', 'fx-shake');
+      if (window.AudioHorror) window.AudioHorror.playGayageumNote(180);
+      
+      setTimeout(() => {
+        layout.classList.remove('fx-glitch', 'fx-shake');
+      }, duration);
+    }
   }
 
-  // 복합적인 공포 연출 (Jump Scare)
-  scare() {
-    this.flashRed(800);
-    this.glitch(600);
-    setTimeout(() => this.invert(200), 100);
+  // 6. 시작 연출 (Initial Massive Scare)
+  scareMassive() {
+    this.setVignette(true);
+    this.setNoise(true);
+    this.startBloodDrip(300);
+    this.flashBlood(1500);
+    this.glitch(1000);
   }
 }
 
 // 전역 싱글톤 노출
-window.HorrorFX = new HorrorFX();
+window.HorrorFX = new HorrorFXEngine();

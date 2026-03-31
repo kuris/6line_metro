@@ -294,23 +294,33 @@ function updateStats() {
   if (ST_SCR) ST_SCR.textContent = G.score;
   if (ST_MOV) ST_MOV.textContent = G.moveCount;
 
-  // 정신력(魂) 기반 무작위 호러 연출 트리거
-  if (window.HorrorFX && !window.AudioHorror.isMuted) {
-    const madness = (100 - G.sanity); // 광기 수치
-    const rand = Math.random() * 1000;
-    
-    // 광기가 높을수록(정신력이 낮을수록) 확률 증가
-    if (rand < (madness * 0.15)) { // 정신력 0일 때 약 1.5% 확률로 상시 발생
-      const fxType = Math.random();
-      if (fxType < 0.6) window.HorrorFX.glitch(200 + Math.random() * 400);
-      else if (fxType < 0.9) window.HorrorFX.flashRed(300 + Math.random() * 500);
-      else window.HorrorFX.scare(); // 드물게 점프 스케어
+  // ────────────────────────────────
+  // 전면적 호러 연출 연동 (정신력 魂 기반)
+  // ────────────────────────────────
+  if (window.HorrorFX) {
+    // 정신력 50 이하: 시야 압박 및 노이즈 발생
+    if (G.sanity < 50) {
+      window.HorrorFX.setVignette(true);
+      window.HorrorFX.setNoise(true);
+    } else {
+      window.HorrorFX.setVignette(false); 
+      window.HorrorFX.setNoise(false);
     }
-  }
 
-  // 기존 정신력 저하 시 신음 소리
-  if (G.sanity < 30 && Math.random() < 0.05 && window.AudioHorror) {
-    window.AudioHorror.playMoan();
+    // 임계치 이하(정신력 25 미만): 모니터가 피를 흘리기 시작
+    if (G.sanity < 25) {
+      window.HorrorFX.startBloodDrip(800 - (25 - G.sanity) * 20); 
+    } else {
+      window.HorrorFX.stopBloodDrip();
+    }
+    
+    // 무작위 점멸 및 비명 (정신적 붕괴 체감)
+    if (G.sanity < 40 && Math.random() < 0.1) {
+      window.HorrorFX.flashBlood(400);
+    }
+    if (G.sanity < 30 && Math.random() < 0.1) {
+      window.HorrorFX.glitch(400);
+    }
   }
 
   if (ST_HANJA && ST_HANJA_W) {

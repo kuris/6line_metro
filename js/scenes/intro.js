@@ -26,9 +26,9 @@ async function sceneIntro() {
   TrainPanel.addLog('저주받은 시스템 부팅 중...', 'warn');
   TrainPanel.addLog('[†] 6호선: 죽음의 궤도 가동 시작', 'death');
 
+  // 대규모 공포 연출 트리거 (모니터 혈성 연출 포함)
   if (window.HorrorFX) {
-    window.HorrorFX.flashRed(1200);
-    setTimeout(() => window.HorrorFX.glitch(600), 400);
+    window.HorrorFX.scareMassive();
   }
 
   await seq([
