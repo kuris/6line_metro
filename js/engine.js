@@ -397,8 +397,8 @@ async function checkGameOver() {
 // ────────────────────────────────
 //  ⚡ 빨리보기
 // ────────────────────────────────
-let fastMode = false;
 let skipMode = false;
+let fastMode = false; // 기본값은 공포 분위기를 위해 느린 진행(false)으로 설정
 let printQueue = [];
 let skipResolvers = [];
 let isTyping = false;

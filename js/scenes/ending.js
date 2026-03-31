@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════
    scenes/ending.js
    6호선 잔혹사: 다중 엔딩 및 피의 게임 오버
-   — 결말은 탈출이 아니라, 당신의 영혼이 멈춰 선 곳입니다.
+   — 지연 시간(Pacing)을 강화하여 결말의 여운과 공포를 극대화합니다.
    ═══════════════════════════════════════════════════ */
 
 'use strict';
@@ -15,25 +15,24 @@ function determineEnding() {
   const tod  = G.timeOfDay || 'noon';
   const inv  = G.inventory || [];
 
-  // 특수 엔딩 우선 체크
   if (inv.includes('속삭이는 두개골') && inv.includes('살아있는 유충 병')) {
-    return 'cursed_artifact'; // 🌀 저주받은 수집가
+    return 'cursed_artifact'; 
   }
   
   if (sc >= 50) {
-    return 'karma_monarch';    // 👹 업보를 짊어진 군주 (최고 득점)
+    return 'karma_monarch';    
   }
   if (sc >= 30) {
-    return 'scarred_survivor'; // 🛡️ 흉터 입은 생존자 (고득점)
+    return 'scarred_survivor'; 
   }
   if (sc >= 15) {
-    return 'soul_partial';     // 🌓 반쪽짜리 영혼 (중간 득점)
+    return 'soul_partial';     
   }
   if (G.infection >= 80) {
-    return 'evolving_horror';  // 🦠 진화하는 공포 (고감염)
+    return 'evolving_horror';  
   }
   
-  return 'eternal_passenger';  // 🌑 영원히 내리지 못하는 승객 (저득점)
+  return 'eternal_passenger';  
 }
 
 /* ──────────────────────────────────────────
@@ -57,19 +56,18 @@ async function sceneGameOver() {
     [`  ╠══════════════════════════════╣`, ''],
     [`  ║  사유 : ${padRight(reason, 20)}║`, ''],
     [`  ╚══════════════════════════════╝`, ''],
-  ], 'ascii-danger', { rowDelay: 50, sound: 'boom' });
+  ], 'ascii-danger', { rowDelay: 120, sound: 'boom' });
 
   await seq([
-    ['', 'blank', 300],
-    ['눈앞이 핏빛으로 물든다.', 'narrator', 600],
-    ['전동차의 덜컹거림이 이제 당신의 심장 박동과 동기화된다.', 'narrator', 900],
-    ['당신은 이제 6호선의 영원한 부품 중 하나다.', 'death', 1200],
-    ['', 'blank', 1500],
-    ['[†] 다음 승객을 기다립니다...', 'highlight', 1800],
+    ['', 'blank', 1000],
+    ['눈앞이 핏빛으로 물든다.', 'narrator', 2000],
+    ['전동차의 덜컹거림이 이제 당신의 심장 박동과 동기화된다.', 'narrator', 3500],
+    ['당신은 이제 6호선의 영원한 부품 중 하나다.', 'death', 5000],
+    ['', 'blank', 5500],
+    ['[†] 다음 승객을 기다립니다...', 'highlight', 7000],
   ]);
 
   const sc = G.score;
-
   const btnWrap = document.createElement('div');
   btnWrap.id = 'ending-btn-wrap';
 
@@ -106,35 +104,35 @@ async function sceneEnding(endingKey) {
       title = '업보를 짊어진 군주';
       sub = '👹 THE LORD OF KARMA';
       desc = [
-        '당신이 지나온 39개의 무덤엔 당신의 비정한 결단과 피의 흔적이 가득하다.',
-        '지옥의 왕은 당신의 비릿한 업보에 경탄하며, 노선의 열쇠를 건넸다.',
-        '이제 당신은 이 전동차를 운전하는 사신(死神)이다.',
+        ['당신이 지나온 39개의 무덤엔 당신의 비정한 결단과 피의 흔적이 가득하다.', 2000],
+        ['지옥의 왕은 당신의 비릿한 업보에 경탄하며, 노선의 열쇠를 건넸다.', 3500],
+        ['이제 당신은 이 전동차를 운전하는 사신(死神)이다.', 5000],
       ];
       break;
     case 'scarred_survivor':
       title = '흉터 입은 생존자';
       sub = '🛡️ THE SCARRED SURVIVOR';
       desc = [
-        '간신히 신내역의 안개를 뚫고 지상으로 나왔지만, 태양 빛이 너무나 아프다.',
-        '당신의 등엔 수많은 영혼이 매달려 있고, 밤마다 전동차 소리에 비명을 지를 것이다.',
-        '생존은 구원인가, 아니면 또 다른 고통의 시작인가.',
+        ['간신히 신내역의 안개를 뚫고 지상으로 나왔지만, 태양 빛이 너무나 아프다.', 2000],
+        ['당신의 등엔 수많은 영혼이 매달려 있고, 밤마다 전동차 소리에 비명을 지를 것이다.', 3500],
+        ['생존은 구원인가, 아니면 또 다른 고통의 시작인가.', 5000],
       ];
       break;
     case 'eternal_passenger':
       title = '영원히 내리지 못하는 승객';
       sub = '🌑 THE ETERNAL PASSENGER';
       desc = [
-        '아무런 흔적도 남기지 못한 채, 당신의 존재는 흐릿해져 간다.',
-        '문은 열렸으나 당신의 발은 바닥에 눌어붙어 움직이지 않는다.',
-        '당신은 이제 창문에 비친 기괴한 허상 중 하나로 남을 뿐이다.',
+        ['아무런 흔적도 남기지 못한 채, 당신의 존재는 흐릿해져 간다.', 2000],
+        ['문은 열렸으나 당신의 발은 바닥에 눌어붙어 움직이지 않는다.', 3500],
+        ['당신은 이제 창문에 비친 기괴한 허상 중 하나로 남을 뿐이다.', 5000],
       ];
       break;
     default:
       title = '망각의 끝';
       sub = '🌫️ THE FORGOTTEN END';
       desc = [
-        '여정이 끝났다. 하지만 당신은 아무것도 기억하지 못한 채 눈을 뜬다.',
-        '어느 역인지 알 수 없는 승강장. 당신의 손엔 6호선 승차권만이 쥐어져 있다.',
+        ['여정이 끝났다. 하지만 당신은 아무것도 기억하지 못한 채 눈을 뜬다.', 2000],
+        ['어느 역인지 알 수 없는 승강장. 당신의 손엔 6호선 승차권만이 쥐어져 있다.', 3500],
       ];
   }
 
@@ -145,15 +143,14 @@ async function sceneEnding(endingKey) {
     [`  ╠══════════════════════════════╣`, ''],
     [`  ║  최종 業(업) : ${padRight(G.score.toString(), 10)}    ║`, ''],
     [`  ╚══════════════════════════════╝`, ''],
-  ], 'ascii-ending', { rowDelay: 70 });
+  ], 'ascii-ending', { rowDelay: 120 });
 
-  for (const line of desc) {
-    await print(line, 'narrator', 800);
+  for (const [text, delay] of desc) {
+    await print(text, 'narrator', delay);
   }
 
-  if (window.HorrorFX) window.HorrorFX.flashRed(1000);
+  if (window.HorrorFX) window.HorrorFX.flashRed(1500);
 
-  // 결과 공유 버튼
   const btnWrap = document.createElement('div');
   btnWrap.id = 'ending-btn-wrap';
   

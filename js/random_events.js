@@ -19,24 +19,24 @@ const RANDOM_EVENT_POOL = [
       if (window.HorrorFX) window.HorrorFX.flashRed(500);
       await seq([
         ['', 'blank', 0],
-        ['비틀거리는 형체가 다가온다. 눈꺼풀이 잘려 나간 채 핏발 서린 안구가 당신을 고정한다.', 'narrator', 200],
-        ['"너... 너도 영혼에 단내 나잖아... 공평하게 한 입만...!"', 'danger', 500],
-        ['차가운 손이 당신의 목줄기(Vessel)를 낚아채려 한다.', 'danger', 800],
+        ['비틀거리는 형체가 다가온다. 눈꺼풀이 잘려 나간 채 핏발 서린 안구가 당신을 고정한다.', 'narrator', 1000],
+        ['"너... 너도 영혼에 단내 나잖아... 공평하게 한 입만...!"', 'danger', 2200],
+        ['차가운 손이 당신의 목줄기(Vessel)를 낚아채려 한다.', 'danger', 3500],
       ]);
       await choices([
         ['결사적으로 맞서 싸운다 (저항)', async () => {
           if (G.playerGender === '남성' && (G.playerAge === '20대' || G.playerAge === '30대')) {
             await seq([
-              ['강하게 팔을 쳐내고 그의 흉부를 발로 찼다.', 'highlight', 200],
-              ['괴물은 꺽꺽대며 바닥을 기어 다른 칸으로 사라졌다.', 'narrator', 500],
+              ['강하게 팔을 쳐내고 그의 흉부를 발로 찼다.', 'highlight', 1200],
+              ['괴물은 꺽꺽대며 바닥을 기어 다른 칸으로 사라졌다.', 'narrator', 2500],
             ]);
             await modifyStat('sanity', 10);
             G.score += 5; updateStats();
           } else {
             if (window.HorrorFX) window.HorrorFX.glitch(400);
             await seq([
-              ['저항했지만 침식된 자의 힘은 상상을 초월했다.', 'danger', 200],
-              ['그의 손가락이 당신의 살점을 파고들어 한 조각을 삼켜버렸다.', 'death', 500],
+              ['저항했지만 침식된 자의 힘은 상상을 초월했다.', 'danger', 1200],
+              ['그의 손가락이 당신의 살점을 파고들어 한 조각을 삼켜버렸다.', 'death', 2500],
             ]);
             await modifyStat('health', -25);
             await modifyStat('infection', 15);
@@ -45,14 +45,14 @@ const RANDOM_EVENT_POOL = [
         ['어둠 속으로 도망친다 (회피)', async () => {
           if (G.playerAge === '10대' || G.playerAge === '20대') {
             await seq([
-              ['심장이 터질 듯한 공포를 느끼며 옆 칸으로 도주했다.', 'narrator', 200],
-              ['뒤를 돌아보자, 그가 당신의 발자국에 고인 피를 핥고 있다.', 'death', 500],
+              ['심장이 터질 듯한 공포를 느끼며 옆 칸으로 도주했다.', 'narrator', 1200],
+              ['뒤를 돌아보자, 그가 당신의 발자국에 고인 피를 핥고 있다.', 'death', 2500],
             ]);
             await modifyStat('sanity', -10);
           } else {
             await seq([
-              ['도망치려 했으나 공포로 다리가 풀렸다.', 'danger', 200],
-              ['등을 세게 부딪히며 옆 칸으로 간신히 넘어갔다. 뼈가 어긋나는 소리가 들린다.', 'narrator', 500],
+              ['도망치려 했으나 공포로 다리가 풀렸다.', 'danger', 1200],
+              ['등을 세게 부딪히며 옆 칸으로 간신히 넘어갔다. 뼈가 어긋나는 소리가 들린다.', 'narrator', 2500],
             ]);
             await modifyStat('health', -15);
             await modifyStat('sanity', -15);
@@ -60,7 +60,7 @@ const RANDOM_EVENT_POOL = [
         }],
         ['미동도 없이 죽은 척한다 (도박)', async () => {
           await seq([
-            ['숨을 죽였지만, 그는 당신의 땀 냄새를 즐기듯 얼굴을 핥고 지나갔다.', 'danger', 200],
+            ['숨을 죽였지만, 그는 당신의 땀 냄새를 즐기듯 얼굴을 핥고 지나갔다.', 'danger', 1200],
           ]);
           await modifyStat('health', -20);
           await modifyStat('sanity', -20);
@@ -76,8 +76,8 @@ const RANDOM_EVENT_POOL = [
     async fn() {
       await seq([
         ['', 'blank', 0],
-        ['선반 위에 버려진 검은색 백팩이 있다.', 'narrator', 200],
-        ['지퍼 틈 사이로 아찔할 만큼 강렬한 단내가 흘러나온다.', 'danger', 500],
+        ['선반 위에 버려진 검은색 백팩이 있다.', 'narrator', 1000],
+        ['지퍼 틈 사이로 아찔할 만큼 강렬한 단내가 흘러나온다.', 'danger', 2200],
       ]);
       const compOptions = G.companions && G.companions.length > 0 ? (G.companions.map(c => [`동행자 ${c.name}에게 시킨다`, async () => {
         await seq([
