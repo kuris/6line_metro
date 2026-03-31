@@ -72,19 +72,34 @@ async function sceneIntro() {
     ['이 노선의 승객은 누구입니까.', 'highlight', 2000],
   ]);
 
-  // 이름 입력
+  // 이름 입력 (예시 3개 + 직접 입력)
   await new Promise(resolve => {
-    NAME_AREA.classList.add('active');
-    NAME_IN.focus();
-    const go = () => {
-      const v = NAME_IN.value.trim();
-      G.playerName = v || '김도현';
-      NAME_AREA.classList.remove('active');
-      TrainPanel.addLog(`탑승객: ${G.playerName}`, 'new');
-      resolve();
-    };
-    NAME_CNF.onclick = go;
-    NAME_IN.onkeydown = e => { if (e.key === 'Enter') go(); };
+    const examples = ['김도현', '박지민', '이서윤'];
+    const opts = examples.map(name => [
+      `강력 추천: ${name}`,
+      async () => {
+        G.playerName = name;
+        TrainPanel.addLog(`탑승객: ${G.playerName}`, 'new');
+        resolve();
+      }
+    ]);
+
+    opts.push(['⌨️ 직접 이름을 입력하겠습니다', async () => {
+      await print('이름을 입력해주세요.', 'system');
+      NAME_AREA.classList.add('active');
+      NAME_IN.focus();
+      const go = () => {
+        const v = NAME_IN.value.trim();
+        G.playerName = v || '김도현';
+        NAME_AREA.classList.remove('active');
+        TrainPanel.addLog(`탑승객: ${G.playerName}`, 'new');
+        resolve();
+      };
+      NAME_CNF.onclick = go;
+      NAME_IN.onkeydown = e => { if (e.key === 'Enter') go(); };
+    }]);
+
+    choices(opts);
   });
 
   await afterName();
