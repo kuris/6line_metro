@@ -286,6 +286,7 @@ async function sceneSelectTOD() {
     return [
       `${t.emoji} ${t.label}  ${t.time}  — ${t.crowd} · ${t.bgNote}`,
       async () => {
+        if (window.AudioHorror) window.AudioHorror.init();
         G.timeOfDay = todId;
         updateTODStat();
         TrainPanel.addLog(`탑승 시간: ${t.label} ${t.time}`, 'new');

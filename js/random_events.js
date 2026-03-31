@@ -740,9 +740,12 @@ const RANDOM_EVENT_POOL = [
         ['그의 입에는 아직... 사람의 손가락이 물려 있다.', 'danger', 800],
       ]);
 
-      const res = await startATBCombat({
-        desc: '감염자가 당신을 향해 도약합니다!',
-        monsterImg: 'images/chracter/mad_girl.png', // 임시 좀비 대용
+      const res = await CombatEngine.startBattle({
+        name: '감염된 승객',
+        hp: 30,
+        atk: 5,
+        speed: 1.0,
+        desc: '이성을 잃은 승객이 당신에게 달려듭니다!',
         timeLimit: 2200,
         actions: [
           { label: '옆으로 구른다', resolveValue: 'dodge' },
@@ -787,9 +790,9 @@ const RANDOM_EVENT_POOL = [
         ['차가운 손가락들이 당신의 발목을 움켜잡는다.', 'danger', 800],
       ]);
 
-      const res = await startATBCombat({
+      const res = await CombatEngine.startBattle({
         desc: '그림자가 당신을 바닥으로 끌어당깁니다!',
-        monsterImg: 'images/chracter/fear_boy.png',
+        img: 'images/chracter/fear_boy.png',
         timeLimit: 1800,
         actions: [
           { label: '필사적으로 뿌리친다', resolveValue: 'struggle' },
@@ -831,9 +834,9 @@ const RANDOM_EVENT_POOL = [
         ['문틈 사이로 창백한 손가락들이 비져나오며 속삭임이 커진다.', 'danger', 800],
       ]);
 
-      const res = await startATBCombat({
+      const res = await CombatEngine.startBattle({
         desc: '유혹의 속삭임이 당신의 정신을 파고듭니다!',
-        monsterImg: 'images/chracter/fear_boy.png',
+        img: 'images/chracter/fear_boy.png',
         timeLimit: 2500,
         actions: [
           { label: '귀를 막고 노래한다', resolveValue: 'hum' },
@@ -876,9 +879,9 @@ const RANDOM_EVENT_POOL = [
         ['열린 문 사이로 터널의 차가운 돌벽이 보이고, 무언가 안으로 들어오려 한다.', 'danger', 800],
       ]);
 
-      const res = await startATBCombat({
+      const res = await CombatEngine.startBattle({
         desc: '문이 완전히 열리기 전에 조치를 취해야 합니다!',
-        monsterImg: 'images/subway/door_dark.png', // 문 이미지 대용
+        img: 'images/subway/door_dark.png', // 문 이미지 대용
         timeLimit: 2000,
         actions: [
           { label: '비상 수동 레버 조작', resolveValue: 'lever' },

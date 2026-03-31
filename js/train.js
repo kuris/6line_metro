@@ -410,12 +410,20 @@ const TrainPanel = (() => {
   //  차내 로그
   // ══════════════════════════════════
   function addLog(text, type = 'info') {
-    const now = new Date();
-    const ts  = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    // 타임스탬프 대신 십자가(†) 사용 — "데드 로그" 느낌
+    const symbol = `[†]`;
     const entry = document.createElement('div');
     entry.className = `tlog-entry ${type}`;
-    entry.textContent = `[${ts}] ${text}`;
+    entry.textContent = `${symbol} ${text}`;
     logEl.appendChild(entry);
+
+    // 로그가 찍힐 때마다 기괴한 가야금 소리 (아주 낮게)
+    if (window.AudioHorror && !window.AudioHorror.isMuted) {
+      const notes = [110, 123, 147]; // 낮은 미레도 스타일
+      const f = notes[Math.floor(Math.random() * notes.length)];
+      window.AudioHorror.playGayageumNote(f);
+    }
+
     const entries = logEl.querySelectorAll('.tlog-entry');
     if (entries.length > LOG_MAX) entries[0].remove();
     requestAnimationFrame(() => entry.classList.add('show'));
@@ -442,21 +450,21 @@ const TrainPanel = (() => {
   // ══════════════════════════════════
   async function playArrival(stationName, cb) {
     setState('arriving', stationName);
-    addLog(`${stationName} 도착`, 'new');
+    addLog(`${stationName}: 어둠의 문이 열립니다`, 'new');
     if (typeof sfx !== 'undefined' && sfx.stopRumble) sfx.stopRumble();
-    showOverlay(`⊡ ${stationName} — 문이 열립니다`, 2500);
+    showOverlay(`⊠ ${stationName} — 문이 열립니다`, 2500);
     await _delay(1200);
     setState('boarding');
     if (typeof sfx !== 'undefined' && sfx.door) sfx.door(true, 0.4);
-    addLog('문 열림', 'info');
+    addLog('통로 개방 — 낯선 공기가 유입됩니다', 'info');
     await _delay(800);
     if (cb) cb();
   }
 
   async function playDepart(cb) {
     if (typeof sfx !== 'undefined' && sfx.door) sfx.door(false, 0.4);
-    addLog('문 닫힘 — 출발', 'info');
-    showOverlay('▶ 출발합니다', 1500);
+    addLog('통로 폐쇄 — 어둠 속으로 가속합니다', 'info');
+    showOverlay('▶ 바퀴가 비명을 지르며 출발합니다', 1500);
     await _delay(600);
     // playDepart 경로임을 표시 → setState 내부에서 중복 재생 방지
     setState._fromDepart = true;

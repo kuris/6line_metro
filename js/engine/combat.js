@@ -83,42 +83,71 @@ const CombatEngine = (() => {
         CHOICES.innerHTML = '';
       };
 
-      // 4. 선택지 렌더링 (실시간 갱신)
+      // 4. 선택지 렌더링 (실시간 갱신 최적화)
       const renderChoices = () => {
         if (isBattleEnd) return;
         
-        CHOICES.innerHTML = '';
-        const actions = [
+        // 커스텀 액션이 제공되면 그것을 사용, 없으면 기본 프로토콜 사용
+        const actions = data.actions ? data.actions.map((act, i) => ({
+          id: act.resolveValue,
+          label: `${i+1}. ${act.label}`,
+          style: act.style || ''
+        })) : [
           { id: 'observe', label: '① 패턴 관찰 (Analyze)', style: '' },
           { id: 'respond', label: '② 심리 대치 (Respond)', style: '' },
           { id: 'retreat', label: '③ 강제 이탈 (Retreat)', style: 'danger' }
         ];
 
-        if (G.companions && G.companions.length > 0) {
+        if (!data.actions && G.companions && G.companions.length > 0) {
           actions.push({ id: 'companion', label: `④ ${G.companions[0].name} 요청`, style: 'highlight' });
         }
 
-        actions.forEach(act => {
-          const btn = document.createElement('button');
-          btn.className = 'choice-btn' + (act.style ? ` ${act.style}` : '');
-          
+        // 버튼이 아직 없으면 생성, 있으면 텍스트만 업데이트
+        const existingBtns = CHOICES.querySelectorAll('.choice-btn');
+        
+        if (existingBtns.length !== actions.length) {
+          CHOICES.innerHTML = '';
+          actions.forEach(act => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn' + (act.style ? ` ${act.style}` : '');
+            btn.dataset.id = act.id;
+            btn.dataset.label = act.label;
+            CHOICES.appendChild(btn);
+          });
+        }
+
+        const btns = CHOICES.querySelectorAll('.choice-btn');
+        btns.forEach(btn => {
+          const actionId = btn.dataset.id;
+          const actionLabel = btn.dataset.label;
+
           if (playerAtb < 100) {
-            btn.innerHTML = `${act.label} <span style="opacity:0.5; font-size:10px;">[대기 ${Math.floor(playerAtb)}%]</span>`;
+            btn.innerHTML = `${actionLabel} <span style="opacity:0.5; font-size:10px;">[대기 ${Math.floor(playerAtb)}%]</span>`;
             btn.style.opacity = '0.5';
             btn.disabled = true;
           } else {
-            btn.innerHTML = `<strong>${act.label}</strong>`;
+            btn.innerHTML = `<strong>${actionLabel}</strong>`;
+            btn.style.opacity = '1';
+            btn.disabled = false;
             btn.onclick = () => {
               if (isActing) return;
-              resolveAction(act.id);
+              resolveAction(actionId);
             };
           }
-          CHOICES.appendChild(btn);
         });
       };
 
       const resolveAction = async (action) => {
         isActing = true;
+
+        // 커스텀 액션(돌발 이벤트)인 경우 선택 즉시 해당 값 반환하며 종료
+        if (data.actions) {
+          isBattleEnd = true;
+          cleanup();
+          resolve(action);
+          return;
+        }
+
         if (action === 'observe') {
           observationLevel++;
           h.speed *= 0.85;
@@ -158,24 +187,31 @@ const CombatEngine = (() => {
       };
 
       // ── 메인 루프 ──
-      let lastChoiceUpdate = 0;
       const tick = () => {
         if (isBattleEnd) return;
 
         if (!isActing) {
           const oldAtb = Math.floor(playerAtb);
-          playerAtb += 1.2; 
+          playerAtb += 1.25; 
           if (playerAtb >= 100) playerAtb = 100;
           
-          // ATB 정수값이 바뀔 때만 선택지 UI 갱신 (성능 최적화)
-          if (Math.floor(playerAtb) !== oldAtb || playerAtb === 100) {
+          if (Math.floor(playerAtb) !== oldAtb) {
              renderChoices();
           }
         }
 
-        enemyAtb += (0.5 * h.speed);
+        enemyAtb += (0.6 * h.speed);
         if (enemyAtb >= 100) {
           enemyAtb = 0;
+
+          // 커스텀 액션(돌발 이벤트)인 경우 적이 먼저 공격하면 'timeout' 처리
+          if (data.actions) {
+            log('대응 시간이 초과되었습니다!', 'danger');
+            isBattleEnd = true;
+            setTimeout(() => { cleanup(); resolve('timeout'); }, 800);
+            return;
+          }
+
           const dmg = h.atk * (0.8 + Math.random() * 0.4);
           G.health -= Math.floor(dmg);
           log(`${h.name}의 물리적 접촉! 본체 손상 발생 (-${Math.floor(dmg)})`, 'danger');

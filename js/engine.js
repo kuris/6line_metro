@@ -290,9 +290,28 @@ function updateStats() {
   if (ST_HP) ST_HP.textContent = Math.max(0, G.health);
   if (ST_SP) ST_SP.textContent = Math.max(0, G.sanity);
   if (ST_INF) ST_INF.textContent = Math.max(0, Math.min(100, G.infection));
-  ST_MSN.textContent = G.missionCount;
-  ST_SCR.textContent = G.score;
-  ST_MOV.textContent = G.moveCount;
+  if (ST_MSN) ST_MSN.textContent = G.missionCount;
+  if (ST_SCR) ST_SCR.textContent = G.score;
+  if (ST_MOV) ST_MOV.textContent = G.moveCount;
+
+  // 정신력(魂) 기반 무작위 호러 연출 트리거
+  if (window.HorrorFX && !window.AudioHorror.isMuted) {
+    const madness = (100 - G.sanity); // 광기 수치
+    const rand = Math.random() * 1000;
+    
+    // 광기가 높을수록(정신력이 낮을수록) 확률 증가
+    if (rand < (madness * 0.15)) { // 정신력 0일 때 약 1.5% 확률로 상시 발생
+      const fxType = Math.random();
+      if (fxType < 0.6) window.HorrorFX.glitch(200 + Math.random() * 400);
+      else if (fxType < 0.9) window.HorrorFX.flashRed(300 + Math.random() * 500);
+      else window.HorrorFX.scare(); // 드물게 점프 스케어
+    }
+  }
+
+  // 기존 정신력 저하 시 신음 소리
+  if (G.sanity < 30 && Math.random() < 0.05 && window.AudioHorror) {
+    window.AudioHorror.playMoan();
+  }
 
   if (ST_HANJA && ST_HANJA_W) {
     if (G.hanjaAttempts > 0) {
@@ -478,10 +497,15 @@ function getCtx() {
 }
 
 // 초기 버튼 상태를 ON으로 설정
-SOUND_BTN.textContent = '🔊';
-SOUND_BTN.title       = '사운드 끄기';
-SOUND_BTN.classList.add('active');
-
+if (SOUND_BTN) {
+  SOUND_BTN.onclick = () => {
+    const isMuted = SOUND_BTN.classList.toggle('muted');
+    SOUND_BTN.innerHTML = isMuted ? '🔇 MUTE' : '🔊 SOUND';
+    if (window.AudioHorror) window.AudioHorror.setMute(isMuted);
+    // 기존 sfx 무음 처리 (구현되어 있다면)
+    if (window.sfx) sfx.setMute(isMuted); 
+  };
+}
 // 첫 번째 사용자 인터랙션에서 AudioContext 활성화
 function _unlockAudio() {
   if (soundOn) getCtx();

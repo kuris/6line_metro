@@ -1,353 +1,237 @@
 /* ═══════════════════════════════════════════════════
-   scenes/events_part3.js (635 ~ 648)
-   신당 ~ 봉화산 구간 이벤트 (통합 및 최적화)
+   scenes/events_part3.js
+   6호선 잔혹사: 신당 ~ 신내 (지옥의 종착지)
+   — 당신이 아는 그 이름 아래 진정한 어둠이 도사립니다.
    ═══════════════════════════════════════════════════ */
 
 'use strict';
 
-window.STATION_EVENTS = window.STATION_EVENTS || {};
-
-Object.assign(STATION_EVENTS, {
+const EVENTS_PART3 = {
 
   /* ── 신당 (635) ── */
   async ev_sindang(stIdx) {
-    TrainPanel.setState('crowded');
-    TrainPanel.addLog('신당 — 중앙시장 상인들과 기묘한 노파', 'event');
+    TrainPanel.setState('event');
+    TrainPanel.addLog('신당 — 망령들의 새로운 거처', 'event');
+    if (window.HorrorFX) window.HorrorFX.flashRed(500);
+
     await seq([
-      ['신당역. 2호선 환승 인파와 함께 중앙시장 상인들이 대거 탑승한다.', 'announce', 200],
-      ['커다란 보따리들이 객차 바닥을 채우고, 눅눅한 시장 냄새가 번진다.', 'narrator', 450],
-      ['그때, 남루한 차림의 한 노파가 당신 곁에 앉으며 차갑게 읊조린다.', 'narrator', 700],
-      ['"이봐... 오늘 길조심해. 특히 아래를 보지 마."', 'dialog', 1000],
+      ['신당역. 2호선에서 넘어온 고독사한 망령들이 집단으로 탑승한다.', 'announce', 200],
+      ['시장 보따리 안에서 썩은 내와 비릿한 피 내음이 진동한다.', 'narrator', 450],
+      ['남루한 노파가 당신 곁에 앉으며 차갑게 당신의 손목을 낚아챈다.', 'narrator', 700],
+      ['"이봐... 네 심장은 아직 따뜻하군. 내 보따리에 담아가도 되겠나?"', 'dialog', 1000],
     ]);
 
     const opts = [
-      ['① 할머니의 무거운 보따리를 위 선반에 올려드린다', async () => {
-        G.score += 3; updateStats();
+      ['① 노파의 손을 뿌리치고 도망친다', async () => {
+        G.health -= 10; G.sanity -= 5; updateStats();
         await seq([
-          ['노파 대신 옆에 있던 다른 할머니의 보따리를 챙겨 올렸다.', 'narrator', 200],
-          ['"고마워라. 오늘따라 몸이 천근만근이네."', 'dialog', 450],
-          ['노파는 그 모습을 보며 의미심장하게 웃는다.', 'result', 700],
+          ['뿌리친 자리에 시커먼 손자국이 남으며 살이 타들어 간다.', 'death', 200],
+          ['노파가 꺽꺽대며 웃는다. "도망쳐봐야... 여긴 이미 내 집인걸."', 'dialog', 450],
+          ['骸(해) -10 / 魂(혼) -5 — 육신에 새겨진 저주.', 'warn', 700],
         ]);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
       }],
-      ['② 노파에게 왜 그런 말을 하는지 공손히 묻는다', async () => {
-        G.score += 2; updateStats();
+      ['② 내 심장 대신 業(업)을 내어준다 (협상)', async () => {
+        G.score -= 20; G.sanity -= 15; updateStats();
+        if (window.HorrorFX) window.HorrorFX.glitch(400);
         await seq([
-          ['"그게 무슨 말씀이신가요, 할머니?"', 'highlight', 200],
-          ['노파는 대답 대신 당신의 손을 한 번 꽉 쥐고는 자리에서 일어났다.', 'narrator', 450],
-          ['손바닥에 얼음 같은 차가운 감촉이 남았다.', 'result', 700],
+          ['당신이 쌓아온 운(業)이 검은 연기가 되어 노파의 자루 속으로 빨려 들어간다.', 'death', 200],
+          ['"맛있군... 잠시만 살려주마. 다음 역까지는 말이야."', 'dialog', 450],
+          ['業(업) -20 / 魂(혼) -15 — 대가로 산 생명.', 'life', 700],
         ]);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
       }]
     ];
-
-    if (['오컬트 연구자', '무직자'].includes(G.playerJob)) {
-      opts.push(['[영적 예민함] 노파의 눈을 정면으로 쳐다보며 비범함을 느낀다', async () => {
-        TrainPanel.addLog('신비로운 조우', 'event');
-        G.score += 7; G.sanity = Math.min(100, G.sanity + 20); updateStats();
-        await seq([
-          ['그녀의 눈동자 속에서 수많은 6호선의 영혼들을 보았다.', 'whisper', 200],
-          ['노파가 희미하게 웃었다. "보는 눈이 있구먼."', 'dialog', 450],
-          ['그녀가 당신의 어깨를 툭 쳤다. 온몸의 공포가 씻은 듯 사라진다.', 'life', 700],
-          ['거대한 가호를 얻은 기분이다.', 'result', 1000],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }]);
-    }
-
-    if (G.playerJob === '편의점 알바생') {
-      opts.push(['[편의점 알바생] 시장 사람들의 고단함에 공감하며 가벼운 인사를 건넨다', async () => {
-        TrainPanel.addLog('알바생 — 노동의 연대', 'event');
-        G.score += 5; updateStats();
-        await seq([
-          ['"오늘 물건이 많이 들어왔네요. 힘드시죠?"', 'highlight', 200],
-          ['비슷한 처지의 노동자로서 건넨 한마디에 상인들이 웃으며 답한다.', 'narrator', 450],
-          ['"에구, 학생도 고생이 많네. 이거 하나 먹어봐."', 'dialog', 700],
-          ['검은 봉지에 담긴 귤 몇 알을 선물 받았다.', 'life', 950],
-          ['따뜻한 인심이 차내를 가득 채운다.', 'result', 1100],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }]);
-    }
-
     choices(opts);
   },
 
   /* ── 동묘앞 (636) ── */
   async ev_dongmyo(stIdx) {
     TrainPanel.setState('event');
-    TrainPanel.addLog('동묘앞 — 벼룩시장 할아버지', 'event');
-    await printAscii([
-      [`  ┌──────────────────────────┐`, ''],
-      [`  │  동묘벼룩시장           │`, 'hl'],
-      [`  │  "모든 것은 다 쓸모있다" │`, 'hl'],
-      [`  └──────────────────────────┘`, ''],
-    ], 'ascii-crowd', { rowDelay: 60 });
+    TrainPanel.addLog('동묘앞 — 유품들의 아우성', 'event');
 
     await seq([
-      ['동묘앞역. 낡은 군복 차림의 할아버지가 카세트테이프 꾸러미를 들고 탄다.', 'narrator', 200],
-      ['그가 당신을 유심히 보더니 낡은 테이프 하나를 내민다.', 'narrator', 450],
-      ['"젊은이, 이거 갖겠소? 인생은 아름다운 법이야."', 'dialog', 700],
+      ['동묘앞역. 낡은 군복의 할아버지가 카세트테이프 대신 해골들을 가닥가닥 엮어 들고 탄다.', 'narrator', 200],
+      ['해골들이 일제히 턱을 딱딱거리며 당신의 이름을 부른다.', 'death', 450],
+      ['"젊은이... 이 인생들을 사겠나? 죽음은 참으로 아름다운 법이야."', 'dialog', 700],
     ]);
 
-    const dongmyoOpts = [
-      ['① 감사히 받는다', async () => {
-        addItem('카세트테이프');
-        G.score += 3; updateStats();
+    const opts = [
+      ['① 해골 하나를 건네받는다 (수집)', async () => {
+        addItem('속삭이는 두개골');
+        G.score += 20; G.sanity -= 10; updateStats();
         await seq([
-          ['[인생은 아름다워]라고 적힌 테이프를 받았다.', 'highlight', 200],
-          ['"고맙습니다. 잘 들을게요."', 'dialog', 450],
-          ['할아버지는 만족한 듯 다음 역에서 내렸다.', 'result', 700],
+          ['두개골을 받자 당신의 귓가에 끔찍한 비명이 직접 꽂힌다.', 'death', 200],
+          ['"고마워... 고마워..." 해골이 당신의 손을 날카롭게 깨문다.', 'warn', 450],
+          ['業(업) +20 / 魂(혼) -10 — 무덤의 파수꾼이 된 기분.', 'life', 700],
+        ]);
+        TrainPanel.playDepart();
+        await sceneNextStation(stIdx + (G.dirStep || 1));
+      }],
+      ['② 사양하고 고개를 돌린다', async () => {
+        G.health -= 5; updateStats();
+        await seq([
+          ['할아버지가 씁쓸하게 웃자 해골들이 당신을 향해 독설을 내뱉는다.', 'narrator', 200],
+          ['骸(해) -5 — 보이지 않는 기운이 심장을 강하게 압박한다.', 'warn', 450],
         ]);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
       }]
     ];
+    choices(opts);
+  },
 
-    if (G.playerJob === '가출 청소년') {
-      dongmyoOpts.push(['[가출 청소년] 할아버지의 낡은 옷과 손을 보며 알 수 없는 유대감을 느낀다', async () => {
-        TrainPanel.addLog('가출 청소년 — 세대 초월 공감', 'event');
-        G.score += 6; G.sanity = Math.min(100, G.sanity + 10); updateStats();
+  /* ── 창신 (637) ── */
+  async ev_changsin(stIdx) {
+    TrainPanel.setState('danger');
+    TrainPanel.addLog('창신 — 거짓된 신의 광신도', 'warn');
+    if (window.HorrorFX) window.HorrorFX.scare();
+
+    await seq([
+      ['창신역. 흰 소복을 입은 자들이 전동차 안을 피로 물들이며 뛰어든다.', 'death', 200],
+      ['"제물을 바쳐라! 그래야 이 영겁의 회귀가 끝난다!"', 'dialog', 450],
+      ['그들이 당신을 에워싸고 날카로운 칼날을 들이민다.', 'narrator', 700],
+    ]);
+
+    const opts = [
+      ['① 함께 칼을 휘두르며 광기에 동참한다 (공격)', async () => {
+        G.score += 30; G.sanity -= 20; G.health -= 10; updateStats();
         await seq([
-          ['"저... 저도 비슷한 테이프가 있었어요."', 'highlight', 200],
-          ['할아버지가 당신의 머리를 거칠지만 따뜻하게 쓰다듬었다.', 'narrator', 450],
-          ['"살아라, 얘야. 어떻게든 살다 보면 좋은 날이 와."', 'dialog', 700],
-          ['세상 어디에도 기댈 곳 없던 마음에 온기가 스민다.', 'life', 950],
-          ['+10 정신력 회복', 'life', 1100],
+          ['당신도 모르게 짐승 같은 함성을 지르며 그들과 함께 날뛴다.', 'death', 200],
+          ['객차 바닥이 붉은 바다로 변한다. 이제 누가 광신도인가?', 'narrator', 500],
+          ['業(업) +30 / 魂(혼) -20 — 피의 축제에 침식되었다.', 'life', 800],
         ]);
-        addItem('희망의 테이프');
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
-      }]);
-    }
-
-    dongmyoOpts.push(['② 정중히 사양한다', async () => {
-      await seq([
-        ['"아직은 필요 없을 것 같습니다."', 'narrator', 200],
-        ['할아버지는 씁쓸하게 웃으며 고개를 끄덕였다.', 'result', 450],
-      ]);
-      TrainPanel.playDepart();
-      await sceneNextStation(stIdx + (G.dirStep || 1));
-    }]);
-
-    choices(dongmyoOpts);
+      }],
+      ['② 바닥을 기어서 옆 칸으로 필사적으로 대피한다', async () => {
+        G.health -= 15; updateStats();
+        await seq([
+          ['등 뒤로 칼이 스쳐 지나가며 옷이 찢긴다. 비릿한 쇠 냄새.', 'death', 200],
+          ['간신히 문을 걸어 잠그자, 광신도들이 문 유리를 깨물며 흉측하게 웃는다.', 'narrator', 500],
+          ['骸(해) -15 — 처절한 생존의 상흔.', 'warn', 800],
+        ]);
+        TrainPanel.playDepart();
+        await sceneNextStation(stIdx + (G.dirStep || 1));
+      }]
+    ];
+    choices(opts);
   },
 
   /* ── 안암 (639) ── */
   async ev_anam(stIdx) {
     TrainPanel.setState('crowded');
-    TrainPanel.addLog('안암 — 청춘의 열기와 학구열', 'event');
+    TrainPanel.addLog('안암 — 굶주린 지식의 아귀들', 'event');
+
     await seq([
-      ['안암역. 고려대학교 학생들의 활기찬 웃음소리가 객차를 가득 채운다.', 'announce', 200],
-      ['한쪽에서는 MT를 떠나는 무리가 응원가를 부르고, 다른 쪽에서는 시험 공부가 한창이다.', 'narrator', 450],
+      ['안암역. 하반신이 없는 학도들이 책을 씹어 먹으며 객차 안을 기어 다닌다.', 'announce', 200],
+      ['그들은 당신의 다리를 붙잡고 애원한다. "당신의 뇌를... 한 조각만... 빌려줘..."', 'death', 450],
+      ['검은 잉크가 그들의 눈에서 눈물처럼 흐른다.', 'narrator', 700],
     ]);
 
     const opts = [
-      ['① 학생들의 응원가에 맞춰 가볍게 박수를 쳐준다', async () => {
-        G.score += 3; G.sanity = Math.min(100, G.sanity + 5); updateStats();
+      ['① 지갑에 든 현금을 뿌려 시선을 돌린다', async () => {
+        G.score += 5; updateStats();
         await seq([
-          ['당신의 호응에 학생들이 더 신나게 노래를 부른다.', 'life', 200],
-          ['삭막한 지하철 안이 잠시 동안 축제 현장이 되었다.', 'result', 450],
+          ['돈다발이 흩날리자 그들이 바보 같은 웃음을 지으며 돈을 뜯어 먹는다.', 'narrator', 200],
+          ['업보(業) +5 — 잠시나마 얻은 추악한 자유.', 'life', 450],
         ]);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
       }],
-      ['② 그냥 조용히 자리를 지킨다', async () => {
+      ['② 그들에게 거짓된 정보를 속삭인다 (기만)', async () => {
+        G.sanity -= 10; G.score += 15; updateStats();
+        if (window.HorrorFX) window.HorrorFX.glitch(300);
         await seq([
-          ['청춘의 에너지를 묵묵히 지켜보며 옛 생각을 한다.', 'narrator', 200],
-          ['열차 내의 무거운 정적이 잠시 희석된다.', 'result', 450],
+          ['당신의 거짓 지식을 삼킨 망령들이 고통스럽게 비명을 지르며 썩어간다.', 'death', 200],
+          ['業(업) +15 / 魂(혼) -10 — 영혼을 속이는 교묘한 악의.', 'life', 450],
         ]);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
       }]
     ];
-
-    if (['학원 강사', '의대생', '학생'].includes(G.playerJob)) {
-      opts.push(['[지식 전수] 암기 중인 학생들에게 결정적인 힌트를 건넨다', async () => {
-        TrainPanel.addLog('지식 전수 — 뿌듯함', 'event');
-        G.score += 6; G.sanity = Math.min(100, G.sanity + 10); updateStats();
-        await seq([
-          ['"그 개념은... 뒷장에 그림이랑 같이 보시면 더 잘 외워질 거예요."', 'dialog', 200],
-          ['학생들은 깜짝 놀라며 책을 넘겼다. "헐, 진짜네! 감사합니다!"', 'highlight', 450],
-          ['누군가를 도왔다는 실감이 생존에 대한 의지를 북돋운다.', 'result', 700],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }]);
-    }
-
     choices(opts);
   },
 
-  /* ── 돌곶이 (643) ── */
-  async ev_dolgoji(stIdx) {
-    TrainPanel.setState('event');
-    TrainPanel.addLog('돌곶이 — 무임승차 단속', 'warn');
-    await seq([
-      ['돌곶이역. 단속요원이 탑승해 부정 승차자를 찾고 있다.', 'announce', 200],
-      ['한 청소년이 겁에 질려 당신 옆자리로 몸을 숨긴다.', 'narrator', 450],
-    ]);
-
-    choices([
-      ['① "저 친구는 제 일행입니다"라며 대신 결제해준다', async () => {
-        G.score += 5; updateStats();
-        await seq([
-          ['단속요원에게 카드를 보여주었다. "이 친구 몫까지 찍혔나요?"', 'highlight', 200],
-          ['요원이 고개를 끄덕이며 지나갔다. 소년은 울먹이며 고맙다고 했다.', 'life', 450],
-          ['작은 자비가 누군가에겐 큰 구원이 된다.', 'result', 700],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }],
-      ['② 단속요원의 시선을 피해 청소년을 가려준다', async () => {
-        G.score += 2; updateStats();
-        await seq([
-          ['몸을 살짝 기울여 소년을 요원의 시야에서 차단했다.', 'narrator', 200],
-          ['위기를 넘긴 소년이 조용히 다음 역에서 내렸다.', 'result', 450],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }],
-      ['③ 모른 척 정면만 응시한다', async () => {
-        await seq([
-          ['법은 지켜져야 하는 법. 하지만 마음이 편치는 않다.', 'narrator', 200],
-          ['소년은 결국 요원에게 적발되어 끌려 나갔다.', 'result', 450],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }]
-    ]);
-  },
-
-  /* ── 태릉입구 (645) ── */
-  async ev_taereung(stIdx) {
-    TrainPanel.setState('crowded');
-    TrainPanel.addLog('태릉입구 — 7호선 환승 러시', 'warn');
-    await seq([
-      ['태릉입구역. 7호선에서 쏟아지는 인파로 숨쉬기조차 힘들다.', 'announce', 200],
-      ['각잡힌 제복의 육사 생도들이 늠름하게 자리를 지키고 서 있다.', 'narrator', 450],
-    ]);
-
-    choices([
-      ['① 무거운 짐을 든 승객을 대신해 짐을 들어준다', async () => {
-        G.score += 4; updateStats();
-        await seq([
-          ['"제가 좀 들어드릴까요?"', 'highlight', 200],
-          ['당신의 행동에 옆에 있던 생도들도 함께 돕기 시작했다.', 'result', 450],
-          ['선한 영향력이 순식간에 객차 안으로 퍼져나간다.', 'life', 700],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }],
-      ['② 구석으로 몸을 밀어 넣어 공간을 확보한다', async () => {
-        await seq([
-          ['생존이 우선이다. 최선을 다해 버텼다.', 'narrator', 200],
-          ['열차가 출발하고서야 간신히 숨통이 트였다.', 'result', 450],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }]
-    ]);
-  },
-
-  /* ── 봉화산 (647) ── */
-  async ev_bonghwasan(stIdx) {
+  /* ── 석계 (644) ── */
+  async ev_seokgye(stIdx) {
     TrainPanel.setState('danger');
-    sfx.chime();
-    TrainPanel.addLog('봉화산 — 최후의 갈림길', 'warn');
-    
+    TrainPanel.addLog('석계 — 삼도천의 돌무덤', 'danger');
+    if (window.HorrorFX) window.HorrorFX.flashRed(800);
+
     await seq([
-      ['봉화산역. 과거 이곳이 종착역이었던 흔적이 곳곳에 남아있다.', 'announce', 200],
-      ['하지만 열차는 멈추지 않고 신내를 향해 선로를 바꾼다.', 'narrator', 450],
-      ['갑자기 차내 전등이 미친 듯이 깜빡이며 붉은 비상등이 켜진다.', 'danger', 750],
+      ['석계역. 전동차 바닥을 뚫고 거대한 강돌들이 무수히 솟아오른다.', 'announce', 200],
+      ['객차가 순식간에 망자들의 강물로 채워지기 시작한다. 석계는 시냇물이 아니다.', 'death', 450],
+      ['돌물결 속에 갇힌 승객들의 손이 당신의 목을 졸라 가라앉히려 한다.', 'narrator', 700],
     ]);
 
     const opts = [
-      ['① 비상 레버를 당겨 열차를 멈추려 시도한다', async () => {
+      ['① 돌 더미를 타고 올라가 천장에 매달린다', async () => {
+        G.health -= 20; updateStats();
         await seq([
-          ['[치이익!] 비상 레버를 당겼지만, 무언가에 의해 고정된 듯 꿈쩍도 하지 않는다.', 'danger', 200],
-          ['오히려 반동으로 인해 어깨를 크게 다쳤다.', 'death', 450],
+          ['날카로운 돌에 온몸이 찢기며 간신히 천장 손잡이를 잡았다.', 'death', 200],
+          ['아래에선 비명과 돌 굴러가는 소리가 한참 동안 이어졌다.', 'narrator', 450],
+          ['骸(해) -20 — 피에 젖은 구사일생.', 'warn', 700],
         ]);
-        await modifyStat('health', -15);
-        await modifyStat('sanity', -10);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
       }],
-      ['② 마음을 다잡고 마지막 종착역까지 운명을 맡긴다', async () => {
-        G.score += 5; G.sanity = Math.min(100, G.sanity + 5); updateStats();
+      ['② 강물 속으로 몸을 던져 함께 흐른다 (순응)', async () => {
+        G.infection += 40; G.score += 50; updateStats();
+        if (window.HorrorFX) window.HorrorFX.scare();
         await seq([
-          ['깊은 숨을 내쉬며 자리에 앉았다. 이제 끝이 머지않았다.', 'highlight', 200],
-          ['불안이 걷히고 차분한 정적이 차내를 감싼다.', 'life', 450],
+          ['당신의 몸이 돌처럼 단단해지고 차가워진다. 이제 고통은 없다.', 'death', 200],
+          ['당신이 곧 석계(石溪)의 일부가 되었다.', 'narrator', 450],
+          ['業(업) +50 / 蝕(식) +40% — 더 이상 인간이 아니다.', 'warn', 700],
         ]);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
       }]
     ];
-
-    if (G.playerJob === '소방관' || G.playerJob === '형사') {
-      opts.push(['[직업 특수] 차내 상황을 살피며 승객들을 안심시킨다', async () => {
-        TrainPanel.addLog('통제력 발휘', 'event');
-        G.score += 10; updateStats();
-        await seq([
-          ['"모두 침착하세요! 곧 종점에 도착합니다!"', 'highlight', 200],
-          ['당신의 단호한 목소리에 동요하던 승객들이 안정을 찾는다.', 'life', 450],
-          ['집단의 안정이 당신의 생존 의지도 북돋운다.', 'result', 700],
-        ]);
-        TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
-      }]);
-    }
-
     choices(opts);
   },
 
   /* ── 신내 (648) ── */
   async ev_sinnae(stIdx) {
-    TrainPanel.setState('arriving');
-    sfx.chime();
-    TrainPanel.addLog('신내 — 여정의 완성', 'new');
-    
-    await printAscii([
-      [`  ╔══════════════════════════════════╗`, ''],
-      [`  ║      최  종  종  착  역        ║`, 'hl'],
-      [`  ║   SINNAE  ·  신 내 (648)       ║`, 'hl'],
-      [`  ╚══════════════════════════════════╝`, ''],
-    ], 'ascii-station', { rowDelay: 70 });
+    TrainPanel.setState('danger');
+    TrainPanel.addLog('신내 — 신의 썩어가는 내장', 'danger');
+    if (window.HorrorFX) window.HorrorFX.flashRed(2000);
 
     await seq([
-      ['열차가 천천히 속도를 줄이며 지상 승강장으로 들어선다.', 'announce', 200],
-      ['창밖으로 새벽의 여명이 비치며, 6호선 터널의 어둠이 걷히고 있다.', 'highlight', 500],
-      ['"우리 열차의 마지막 역, 신내역에 도착했습니다."', 'announce', 800],
+      ['종착역, 신내. 전동차가 멈춘 곳은 승강장이 아닌 거대한 유기체의 내부다.', 'announce', 200],
+      ['천장과 벽에서 끈적한 위액이 쏟아지며 객차를 녹여내기 시작한다.', 'death', 450],
+      ['"여기서 내리면... 진정한 신의 일부가 된다... 내리지 못하면 영원한 루프뿐..."', 'whisper', 800],
     ]);
 
-    const finalOpts = [
-      ['① 무거운 문을 열고 한 걸음을 내디딘다', async () => {
+    const opts = [
+      ['① 문 밖으로 뛰어 내려 신의 일부가 된다 (엔딩 분기)', async () => {
+        G.sanity = 0; updateStats();
         await seq([
-          ['치익- 소리와 함께 문이 열리고, 상쾌한 바깥 공기가 유입된다.', 'life', 200],
-          ['당신은 드디어 6호선의 악몽에서 벗어났다.', 'highlight', 500],
+          ['뜨거운 위액 속으로 몸을 던졌다. 의식이 녹아 흐른다.', 'death', 200],
+          ['수만 명의 생각과 고통이 하나로 합쳐진다. 아, 이것이 낙원인가.', 'narrator', 500],
+          ['지옥의 끝에서 당신은 안식을 찾았다.', 'result', 800],
         ]);
-        await sceneEnding();
+        // 엔딩 씬으로 트리거 (실제로는 ending.js에서 처리)
+        if (window.sceneEnding) window.sceneEnding('ascension');
+        else sceneNextStation(stIdx + (G.dirStep || 1));
+      }],
+      ['② 거부하고 다시 폐쇄된 전동차 안에 남는다 (루프 지속)', async () => {
+        G.health -= 50; G.score += 100; updateStats();
+        if (window.HorrorFX) window.HorrorFX.glitch(1000);
+        await seq([
+          ['문이 닫히고 열차는 다시 어둠 속으로 가속한다. 응암으로 향하는 루프.', 'death', 200],
+          ['살아남았으나, 육신은 이미 반쯤 녹아내려 끔찍한 형상이다.', 'narrator', 500],
+          ['業(업) +100 — 영원한 순례의 길을 선택했다.', 'life', 800],
+        ]);
+        TrainPanel.playDepart();
+        await sceneNextStation(stIdx + (G.dirStep || 1));
       }]
     ];
+    choices(opts);
+  }
 
-    if (G.companions && G.companions.length > 0) {
-      const compNames = G.companions.map(c => c.name).join(', ');
-      finalOpts.push([`② 동행자(${compNames})와 함께 플랫폼을 걷는다`, async () => {
-        G.score += 20; updateStats();
-        await seq([
-          ['서로의 온기를 느끼며 플랫폼을 내려간다.', 'life', 200],
-          ['"살아남았네요. 정말로..." 누군가의 흐느낌이 들린다.', 'dialog', 450],
-          ['혼자가 아니었기에 도달할 수 있었던 결말이다.', 'highlight', 700],
-        ]);
-        await sceneEnding();
-      }]);
-    }
+};
 
-    choices(finalOpts);
-  },
-
-});
+window.EVENTS_PART3 = EVENTS_PART3;
