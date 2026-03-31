@@ -206,7 +206,7 @@ async function showTriviaPass(st, stIdx) {
       ]);
 
       if (st.hanja || st.hanjaDesc) {
-        await printHanjaCard(st);
+        await maybeRunHanjaQuiz(st);
       }
 
       for (const card of trivia.cards.filter(c => c !== hanjaCard)) {
