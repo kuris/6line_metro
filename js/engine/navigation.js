@@ -32,7 +32,14 @@ async function sceneNextStation(nextIdx) {
     updateStats();
 
     TrainPanel.setState('running');
-    await new Promise(r => setTimeout(r, 400));
+    
+    // 역 진입 시 혈성 연출 (종착역 전용)
+    if (window.HorrorFX) {
+      window.HorrorFX.flashBlood(1200);
+      if (Math.random() < 0.3) window.HorrorFX.glitch(500);
+    }
+
+    await new Promise(r => setTimeout(r, 600));
     await TrainPanel.playArrival(st.name, null);
     TrainPanel.updateStationInfo(st, STATIONS, nextIdx);
     updateProgress(STATIONS, nextIdx);
@@ -123,6 +130,12 @@ async function sceneNextStation(nextIdx) {
     if (typeof showEventImage === 'function') {
       await showEventImage(gImg, gText, 1300, { sound: 'glitch', styleClass: 'style-ghost' });
     }
+  }
+
+  // 매 역 진입 시 혈성 섬광 및 글리치 연동 (상시 호러 분위기 유지)
+  if (window.HorrorFX) {
+    window.HorrorFX.flashBlood(1000);
+    if (Math.random() < 0.2) window.HorrorFX.glitch(300);
   }
 
   await TrainPanel.playArrival(st.name, null);

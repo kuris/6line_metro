@@ -298,19 +298,18 @@ function updateStats() {
   // 전면적 호러 연출 연동 (정신력 魂 기반)
   // ────────────────────────────────
   if (window.HorrorFX) {
-    // 정신력 50 이하: 시야 압박 및 노이즈 발생
-    if (G.sanity < 50) {
-      window.HorrorFX.setVignette(true);
-      window.HorrorFX.setNoise(true);
-    } else {
-      window.HorrorFX.setVignette(false); 
-      window.HorrorFX.setNoise(false);
-    }
+    // 정신력에 비례한 강도 계산 (100 -> 0.0, 0 -> 1.0)
+    const madness = (100 - G.sanity) / 100;
+    window.HorrorFX.setIntensity(madness);
 
-    // 임계치 이하(정신력 25 미만): 모니터가 피를 흘리기 시작
+    // 임계치 이하(정신력 25 미만): 모니터가 피를 본격적으로 흘리기 시작
     if (G.sanity < 25) {
-      window.HorrorFX.startBloodDrip(800 - (25 - G.sanity) * 20); 
-    } else {
+      const dripSpeed = 800 - (25 - G.sanity) * 20; 
+      window.HorrorFX.startBloodDrip(Math.max(150, dripSpeed)); 
+    } else if (G.sanity < 40 && Math.random() < 0.05) {
+      // 정신력이 낮아지기 시작하면 가끔씩 한두 방울씩 흘림
+      window.HorrorFX.spawnBloodDrop();
+    } else if (G.sanity >= 40) {
       window.HorrorFX.stopBloodDrip();
     }
     

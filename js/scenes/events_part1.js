@@ -201,6 +201,8 @@ Object.assign(STATION_EVENTS, {
     TrainPanel.setState('event');
     TrainPanel.addLog('구산 — 아홉 개의 무덤', 'event');
 
+    if (window.HorrorFX) window.HorrorFX.flashBlood(1200);
+
     await seq([
       ['구산역. 열차 바닥에서 아홉 개의 무덤 봉분이 솟아오른다.', 'narrator', 1200],
       ['무덤마다 당신과 똑같은 얼굴을 한 시체들이 하나씩 기어 나온다.', 'death', 2500],
@@ -262,6 +264,7 @@ Object.assign(STATION_EVENTS, {
     const opts = [
       ['① 모니터를 주먹으로 박살 낸다', async () => {
         G.health -= 15; G.score += 10; updateStats();
+        if (window.HorrorFX) window.HorrorFX.flashBlood(800);
         await seq([
           ['박살 난 모니터 파편이 당신의 얼굴을 난도질한다. 피가 전선을 타고 흐른다.', 'death', 1200],
           ['시스템이 오류를 내뿜으며 잠시 멈췄다.', 'narrator', 2200],
@@ -308,7 +311,10 @@ Object.assign(STATION_EVENTS, {
       }],
       ['② "승패는 아무 상관없다"며 그들의 노래를 비웃는다', async () => {
         G.health -= 10; G.sanity -= 10; updateStats();
-        if (window.HorrorFX) window.HorrorFX.flashRed(600);
+        if (window.HorrorFX) {
+            window.HorrorFX.flashBlood(1000);
+            window.HorrorFX.glitch(500);
+        }
         await seq([
           ['분노한 관중들이 객차 유리창을 피 묻은 손으로 긁어대며 비난한다.', 'danger', 1200],
           ['그들의 분노가 물리적인 압력이 되어 당신을 짓누른다.', 'death', 2200],
