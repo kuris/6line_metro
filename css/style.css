@@ -1414,8 +1414,22 @@ input:focus-visible {
   background: rgba(0, 0, 0, 0.95);
   opacity: 0; pointer-events: none;
   transition: opacity 0.3s ease;
+  cursor: pointer;
 }
 .event-image-overlay.show { opacity: 1; pointer-events: auto; }
+
+.event-image-overlay .hint-text {
+  margin-top: 30px;
+  font-size: 10px;
+  color: #3e5a6a;
+  letter-spacing: 2px;
+  animation: hint-blink 1.5s infinite;
+  text-transform: uppercase;
+}
+@keyframes hint-blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
 
 .event-image {
   max-width: 90%; max-height: 70vh;

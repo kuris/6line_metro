@@ -1192,7 +1192,12 @@ function showEventImage(src, text = '', duration = 1600, options = {}) {
       caption.innerHTML = text;
       overlay.appendChild(caption);
     }
-    
+
+    const hint = document.createElement('div');
+    hint.className = 'hint-text';
+    hint.innerHTML = '― TAP TO CONTINUE ―';
+    overlay.appendChild(hint);
+
     document.body.appendChild(overlay);
 
     if (options.sound && sfx[options.sound]) sfx[options.sound](options.volume || 1.0);
@@ -1204,12 +1209,15 @@ function showEventImage(src, text = '', duration = 1600, options = {}) {
       overlay.classList.add('show');
     });
 
-    setTimeout(() => {
+    const dismiss = () => {
       overlay.classList.remove('show');
       setTimeout(() => {
         overlay.remove();
         resolve();
-      }, 400); 
-    }, duration);
+      }, 400);
+      if (typeof sfx !== 'undefined' && sfx.ui) sfx.ui();
+    };
+
+    overlay.onclick = dismiss;
   });
 }
