@@ -334,12 +334,15 @@ async function modifyStat(type, amount, skipCheck = false) {
     if (amount < 0) await print(`[-${Math.abs(amount)} 정신력 감소]`, 'death', 100);
     else if (amount > 0) await print(`[+${amount} 정신력 회복]`, 'life', 100);
 
-    // 트리거 #3: 공포 한계점 컷인
-    if (G.sanity <= 40 && !G.flags.low_sanity_img && typeof showEventImage === 'function') {
-      G.flags.low_sanity_img = true;
-      let fImg = 'images/chracter/fear_girl.png';
-      if (Math.random() < 0.5) fImg = 'images/chracter/fear_boy.png';
-      await showEventImage(fImg, '정신이 아득해진다...', 1200, { sound: 'heartbeat', styleClass: 'style-fear' });
+    // 트리거 #3: 공포 한계점 컷인 (정신력이 낮을 때 30% 확률로 수시 발생)
+    if (G.sanity <= 40 && typeof showEventImage === 'function') {
+      const lucky = (!G.flags.low_sanity_img) ? true : (Math.random() < 0.3);
+      if (lucky) {
+        G.flags.low_sanity_img = true;
+        let fImg = 'images/chracter/fear_girl.png';
+        if (Math.random() < 0.5) fImg = 'images/chracter/fear_boy.png';
+        await showEventImage(fImg, '정신이 아득해진다...', 1200, { sound: 'heartbeat', styleClass: 'style-fear' });
+      }
     }
   } else if (type === 'infection') {
     G.infection = Math.max(0, Math.min(100, G.infection + amount));
