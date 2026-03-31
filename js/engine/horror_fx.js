@@ -125,6 +125,11 @@ class HorrorFXEngine {
     this.glitch(1300);
     for(let i=0; i<6; i++) setTimeout(() => this.spawnSplatter(), 300 + i*180);
   }
+
+  // 별칭 (Compatibility)
+  flashRed(duration) {
+    this.flashBlood(duration);
+  }
 }
 
 window.HorrorFX = new HorrorFXEngine();

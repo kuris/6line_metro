@@ -118,8 +118,21 @@ function buildSaveURL() {
   return `${base}?save=${code}`;
 }
 
+// ────────────────────────────────
+//  Save/Load ASCII 헬퍼
+// ────────────────────────────────
+function padRight(str, len) {
+    str = String(str);
+    let visualLen = 0;
+    for (let i = 0; i < str.length; i++) {
+        visualLen += (str.charCodeAt(i) > 128) ? 2 : 1;
+    }
+    const gap = Math.max(0, len - visualLen);
+    return str + ' '.repeat(gap);
+}
+
 /* ──────────────────────────────────────────
-   QR 모달 표시
+   💾 세이브 슬롯 모달 표시
    ────────────────────────────────────────── */
 function showSaveModal() {
   sfx.ui();

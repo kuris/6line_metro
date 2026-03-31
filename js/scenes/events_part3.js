@@ -213,11 +213,11 @@ const EVENTS_PART3 = {
           ['業(업) +100 — 영원한 순례의 길을 선택했다.', 'life', 1800],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneNextStation(0); // 응암으로 회귀 (루프)
       }]
     ]);
   }
-
 };
 
 window.EVENTS_PART3 = EVENTS_PART3;
+Object.assign(STATION_EVENTS, EVENTS_PART3);

@@ -216,3 +216,4 @@ const EVENTS_PART2 = {
 };
 
 window.EVENTS_PART2 = EVENTS_PART2;
+Object.assign(STATION_EVENTS, EVENTS_PART2);
