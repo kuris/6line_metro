@@ -138,27 +138,44 @@ async function sceneIntro() {
     ]);
   });
 
-  // 출발역 선택 (응암 vs 신내)
-  await print('여정이 시작될 무덤을 선택하세요.', 'system');
+  // 인트로 나레이션 속도 최적화
+  await seq([
+    ['', 'blank', 300],
+    ['당신은 서울 지하철 6호선의 깊은 지하에 서 있습니다.', 'narrator', 1500],
+    ['이곳은 단순한 노선이 아닙니다. 망자들의 비명과 생존자들의 흐느낌이 섞인 궤도.', 'death', 2800],
+    ['...여정의 시작점을 선택하십시오.', 'highlight', 1500],
+  ]);
+
+  // 출발역 선택 시스템 (전 구간 거점역 지원)
   await new Promise(resolve => {
-    choices([
-      ['응암 (Eungam)', async () => {
-        G.startStation = 0; G.currentStation = 0; G.direction = 'up'; G.dirStep = 1; G.endStation = STATIONS.length - 1;
-        resolve();
-      }],
-      ['신내 (Sinnae)', async () => {
-        G.startStation = STATIONS.length - 1; G.currentStation = STATIONS.length - 1; G.direction = 'down'; G.dirStep = -1; G.endStation = 0;
-        resolve();
-      }]
+    const regionOpts = START_STATION_GROUPS.map(group => [
+      group.label, async () => {
+        // 지역 내 세부 역 선택
+        const stationOpts = group.stations.map(stId => {
+          const st = STATIONS[stId];
+          return [`${st.name} (${st.nameEn})`, async () => {
+            const isUp = stId < 30; // 대략적인 방향 설정
+            G.startStation = stId; 
+            G.currentStation = stId; 
+            G.direction = isUp ? 'up' : 'down'; 
+            G.dirStep = isUp ? 1 : -1; 
+            G.endStation = isUp ? 38 : 0;
+            resolve();
+          }];
+        });
+        stationOpts.push(['뒤로 가기', () => choices(regionOpts)]);
+        choices(stationOpts);
+      }
     ]);
+    choices(regionOpts);
   });
 
-  // 첫 이동 시작
+  // 첫 이동 시작 (속도 상향)
   await seq([
-    ['', 'blank', 500],
-    ['문이 닫히며 열차가 울부짖기 시작한다.', 'narrator', 2000],
-    ['당신은 되돌릴 수 없는 여정에 올랐다.', 'death', 3500],
-    ['[†] 순례를 시작합니다.', 'highlight', 5000],
+    ['', 'blank', 400],
+    ['문이 닫히며 열차가 울부짖기 시작한다.', 'narrator', 1500],
+    ['당신은 되돌릴 수 없는 여정에 올랐다.', 'death', 2800],
+    ['[†] 순례를 시작합니다.', 'highlight', 1500],
   ]);
 
   sceneNextStation(G.startStation);

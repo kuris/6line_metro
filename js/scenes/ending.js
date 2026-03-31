@@ -1,178 +1,47 @@
 /* ═══════════════════════════════════════════════════
    scenes/ending.js
-   6호선 잔혹사: 다중 엔딩 및 피의 게임 오버
-   — 지연 시간(Pacing)을 강화하여 결말의 여운과 공포를 극대화합니다.
+   6호선 잔혹사: 엔딩 시퀀스
+   — 텍스트 속도 최적화: 여운은 남기되 호흡은 빠르게 가져갑니다.
    ═══════════════════════════════════════════════════ */
 
 'use strict';
 
-/* ──────────────────────────────────────────
-   엔딩 분기 판정
-   ────────────────────────────────────────── */
-function determineEnding() {
-  const sc   = G.score; // Karma (業)
-  const mis  = G.missionCount;
-  const tod  = G.timeOfDay || 'noon';
-  const inv  = G.inventory || [];
-
-  if (inv.includes('속삭이는 두개골') && inv.includes('살아있는 유충 병')) {
-    return 'cursed_artifact'; 
-  }
-  
-  if (sc >= 50) {
-    return 'karma_monarch';    
-  }
-  if (sc >= 30) {
-    return 'scarred_survivor'; 
-  }
-  if (sc >= 15) {
-    return 'soul_partial';     
-  }
-  if (G.infection >= 80) {
-    return 'evolving_horror';  
-  }
-  
-  return 'eternal_passenger';  
-}
-
-/* ──────────────────────────────────────────
-   게임 오버 (배드 엔딩)
-   ────────────────────────────────────────── */
-async function sceneGameOver() {
-  clearUI();
+async function sceneEnding(type = 'default') {
   TrainPanel.setState('ending');
-  TrainPanel.addLog('[†] 생존 중단 — 영혼이 회수되었습니다', 'danger');
-  if (window.HorrorFX) window.HorrorFX.scare();
+  
+  if (type === 'ascension') {
+    await seq([
+      ['의식이 조각나며 당신은 신의 일부가 됩니다.', 'death', 1500],
+      ['더 이상의 고통도, 더 이상의 의심도 없습니다.', 'narrator', 2200],
+      ['오직 영원한 합일만이 존재할 뿐입니다.', 'highlight', 1800],
+    ]);
+  } else {
+    await seq([
+      ['열차는 멈췄지만, 당신의 여정은 끝나지 않았습니다.', 'narrator', 1500],
+      ['어둠 속에서 다시 울리는 구동음. 저주받은 회귀가 당신을 부릅니다.', 'death', 2200],
+      ['[†] 순례의 끝, 혹은 새로운 시작.', 'highlight', 1800],
+    ]);
+  }
 
-  let reason = '';
-  if (G.health <= 0) reason = '육신(骸)이 갈가리 찢겼습니다.';
-  else if (G.sanity <= 0) reason = '영혼(魂)이 광기에 먹혔습니다.';
-  else if (G.infection >= 100) reason = '침식(蝕)이 자아를 덮쳤습니다.';
-
-  await printAscii([
-    [`  ╔══════════════════════════════╗`, ''],
-    [`  ║   ☠︎ DATA CORRUPTED          ║`, 'danger'],
-    [`  ║   이 지옥에서 당신은 사라졌다   ║`, 'hl'],
-    [`  ╠══════════════════════════════╣`, ''],
-    [`  ║  사유 : ${padRight(reason, 20)}║`, ''],
-    [`  ╚══════════════════════════════╝`, ''],
-  ], 'ascii-danger', { rowDelay: 120, sound: 'boom' });
-
+  // 최종 점수 및 통계 출력 (속도 상향)
   await seq([
-    ['', 'blank', 1000],
-    ['눈앞이 핏빛으로 물든다.', 'narrator', 2000],
-    ['전동차의 덜컹거림이 이제 당신의 심장 박동과 동기화된다.', 'narrator', 3500],
-    ['당신은 이제 6호선의 영원한 부품 중 하나다.', 'death', 5000],
-    ['', 'blank', 5500],
-    ['[†] 다음 승객을 기다립니다...', 'highlight', 7000],
+    ['', 'blank', 500],
+    [`총 여정 거리: 36.4km`, 'system', 600],
+    [`수집한 업보(業): ${G.score}`, 'system', 600],
+    [`최종 정신력(魂): ${G.sanity}`, 'system', 600],
+    [`감염도(蝕): ${G.infection}%`, 'system', 600],
+    ['', 'blank', 800],
   ]);
 
-  const sc = G.score;
-  const btnWrap = document.createElement('div');
-  btnWrap.id = 'ending-btn-wrap';
-
-  const shareText = `[6호선 잔혹사] ${G.playerName}님의 영혼 소멸\n☠︎ 사유: ${reason}\n業(업): ${sc}\n다시 저주의 궤도에 오르기 → https://bbkjhdeq.gensparkspace.com/`;
-  const shareBtn  = document.createElement('button');
-  shareBtn.className = 'end-btn share-btn';
-  shareBtn.innerHTML = '📤 비극적 소식 전파하기';
-  shareBtn.onclick   = () => showShareModal(shareText, 'ghost', sc);
-  btnWrap.appendChild(shareBtn);
-
-  const restartBtn = document.createElement('button');
-  restartBtn.className = 'end-btn';
-  restartBtn.innerHTML = '🚇 다시 탑승하기 (영혼의 재점화)';
-  restartBtn.onclick   = () => { if (window.sfx) sfx.ui(); sceneIntro(); };
-  btnWrap.appendChild(restartBtn);
-
-  OUT.appendChild(btnWrap);
-  scrollBottom();
-}
-
-/* ──────────────────────────────────────────
-   정식 엔딩 연출
-   ────────────────────────────────────────── */
-async function sceneEnding(endingKey) {
-  clearUI();
-  TrainPanel.setState('ending');
+  await print('당신은 이 노선을 다시 이식하시겠습니까?', 'warn');
   
-  let title = '';
-  let sub   = '';
-  let desc  = [];
-
-  switch(endingKey) {
-    case 'karma_monarch':
-      title = '업보를 짊어진 군주';
-      sub = '👹 THE LORD OF KARMA';
-      desc = [
-        ['당신이 지나온 39개의 무덤엔 당신의 비정한 결단과 피의 흔적이 가득하다.', 2000],
-        ['지옥의 왕은 당신의 비릿한 업보에 경탄하며, 노선의 열쇠를 건넸다.', 3500],
-        ['이제 당신은 이 전동차를 운전하는 사신(死神)이다.', 5000],
-      ];
-      break;
-    case 'scarred_survivor':
-      title = '흉터 입은 생존자';
-      sub = '🛡️ THE SCARRED SURVIVOR';
-      desc = [
-        ['간신히 신내역의 안개를 뚫고 지상으로 나왔지만, 태양 빛이 너무나 아프다.', 2000],
-        ['당신의 등엔 수많은 영혼이 매달려 있고, 밤마다 전동차 소리에 비명을 지를 것이다.', 3500],
-        ['생존은 구원인가, 아니면 또 다른 고통의 시작인가.', 5000],
-      ];
-      break;
-    case 'eternal_passenger':
-      title = '영원히 내리지 못하는 승객';
-      sub = '🌑 THE ETERNAL PASSENGER';
-      desc = [
-        ['아무런 흔적도 남기지 못한 채, 당신의 존재는 흐릿해져 간다.', 2000],
-        ['문은 열렸으나 당신의 발은 바닥에 눌어붙어 움직이지 않는다.', 3500],
-        ['당신은 이제 창문에 비친 기괴한 허상 중 하나로 남을 뿐이다.', 5000],
-      ];
-      break;
-    default:
-      title = '망각의 끝';
-      sub = '🌫️ THE FORGOTTEN END';
-      desc = [
-        ['여정이 끝났다. 하지만 당신은 아무것도 기억하지 못한 채 눈을 뜬다.', 2000],
-        ['어느 역인지 알 수 없는 승강장. 당신의 손엔 6호선 승차권만이 쥐어져 있다.', 3500],
-      ];
-  }
-
-  await printAscii([
-    [`  ╔══════════════════════════════╗`, ''],
-    [`  ║   ✦ DESTINATION REACHED     ║`, 'hl'],
-    [`  ║   ${padRight(title, 20)} ║`, 'life'],
-    [`  ╠══════════════════════════════╣`, ''],
-    [`  ║  최종 業(업) : ${padRight(G.score.toString(), 10)}    ║`, ''],
-    [`  ╚══════════════════════════════╝`, ''],
-  ], 'ascii-ending', { rowDelay: 120 });
-
-  for (const [text, delay] of desc) {
-    await print(text, 'narrator', delay);
-  }
-
-  if (window.HorrorFX) window.HorrorFX.flashRed(1500);
-
-  const btnWrap = document.createElement('div');
-  btnWrap.id = 'ending-btn-wrap';
-  
-  const shareText = `[6호선 잔혹사] ${G.playerName}님의 여정 완결\n✦ 엔딩: ${title}\n業(업): ${G.score}\n지옥의 문턱 넘기 → https://bbkjhdeq.gensparkspace.com/`;
-  const shareBtn = document.createElement('button');
-  shareBtn.className = 'end-btn share-btn';
-  shareBtn.innerHTML = '📤 나의 비극 전파하기';
-  shareBtn.onclick = () => showShareModal(shareText, endingKey, G.score);
-  btnWrap.appendChild(shareBtn);
-
-  const restartBtn = document.createElement('button');
-  restartBtn.className = 'end-btn';
-  restartBtn.innerHTML = '🚇 처음부터 다시 순례하기';
-  restartBtn.onclick = () => sceneIntro();
-  btnWrap.appendChild(restartBtn);
-
-  OUT.appendChild(btnWrap);
-  scrollBottom();
+  choices([
+    ['다시 여정을 시작한다 (회귀)', () => location.reload()],
+    ['지옥에서 로그아웃한다', () => {
+      TrainPanel.addLog('시스템 종료 중...', 'warn');
+      setTimeout(() => alert('당신은 탈출할 수 없습니다.'), 1500);
+    }]
+  ]);
 }
 
-function padRight(str, len) {
-  let s = str.toString();
-  while (s.length < len) s += ' ';
-  return s;
-}
+window.sceneEnding = sceneEnding;
