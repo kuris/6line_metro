@@ -43,20 +43,25 @@ class HorrorFXEngine {
     this.bloodInterval = null;
   }
 
-  // 개별 핏방울 생성 (리얼리티 강화)
+  // 개별 핏방울 생성 (반투명 및 가변 길이 무작위성 강화)
   spawnBloodDrop() {
     if (!this.bloodLayer) return;
     const drop = document.createElement('div');
     drop.className = 'blood-drop drip';
     
-    // 무작위 위치 및 크기 (더 굵거나 얇게)
+    // 무작위 변수 계산
     const x = Math.random() * 100;
-    const width = 2 + Math.random() * 6; // 리얼리티를 위해 약간 더 굵게 조절 가능
-    const duration = 3 + Math.random() * 10; // 천천히 흘러내리는 점도 표현
+    const width = 1.5 + Math.random() * 5.5; 
+    const finalHeight = 150 + Math.random() * 450; // 150px ~ 600px 사이 무작위
+    const opacity = 0.4 + Math.random() * 0.5;    // 0.4 ~ 0.9 사이 무작위 투명도
+    const duration = 2.5 + Math.random() * 9;      // 각기 다른 속도
     
+    // 스타일 주입
     drop.style.left = `${x}%`;
     drop.style.width = `${width}px`;
     drop.style.animationDuration = `${duration}s`;
+    drop.style.setProperty('--blood-height', `${finalHeight}px`);
+    drop.style.setProperty('--blood-opacity', opacity);
     
     this.bloodLayer.appendChild(drop);
     setTimeout(() => drop.remove(), duration * 1000);
@@ -70,10 +75,12 @@ class HorrorFXEngine {
     
     const x = Math.random() * 80 + 10;
     const y = Math.random() * 80 + 10;
-    const scale = 0.5 + Math.random() * 1.5;
+    const scale = 0.5 + Math.random() * 2.0;
+    const opacity = 0.3 + Math.random() * 0.5;
     
     splat.style.left = `${x}%`;
     splat.style.top = `${y}%`;
+    splat.style.opacity = `${opacity}`;
     splat.style.transform = `scale(${scale}) rotate(${Math.random() * 360}deg)`;
     
     this.bloodLayer.appendChild(splat);
@@ -86,12 +93,11 @@ class HorrorFXEngine {
     this.flashLayer.classList.add('flash-red');
     if (window.AudioHorror) window.AudioHorror.playMoan();
 
-    // 일시적으로 핏방울 및 핏자국 대량 생성
-    const dropCount = 10 + Math.floor(Math.random() * 10);
+    const dropCount = 8 + Math.floor(Math.random() * 12);
     for(let i=0; i<dropCount; i++) {
-        setTimeout(() => this.spawnBloodDrop(), i * 50);
+        setTimeout(() => this.spawnBloodDrop(), i * 40);
     }
-    const splatCount = 2 + Math.floor(Math.random() * 3);
+    const splatCount = 1 + Math.floor(Math.random() * 3);
     for(let i=0; i<splatCount; i++) {
         setTimeout(() => this.spawnSplatter(), i * 150);
     }
@@ -114,10 +120,10 @@ class HorrorFXEngine {
   // 5. 시작 연출 (Initial Massive Scare)
   scareMassive() {
     this.setIntensity(1.0);
-    this.startBloodDrip(200); // 초반엔 더 빈번하게
-    this.flashBlood(2000);
-    this.glitch(1200);
-    for(let i=0; i<5; i++) setTimeout(() => this.spawnSplatter(), 300 + i*200);
+    this.startBloodDrip(150); 
+    this.flashBlood(2200);
+    this.glitch(1300);
+    for(let i=0; i<6; i++) setTimeout(() => this.spawnSplatter(), 300 + i*180);
   }
 }
 
