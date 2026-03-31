@@ -39,37 +39,42 @@ async function sceneIntro() {
   updateStats();
 
   TrainPanel.setState('idle');
-  TrainPanel.addLog('시스템 부팅 중...', 'info');
-  TrainPanel.addLog('서울 지하철 6호선 가상 운행 시작', 'new');
+  TrainPanel.addLog('저주받은 시스템 부팅 중...', 'warn');
+  TrainPanel.addLog('[†] 6호선: 죽음의 궤도 가동 시작', 'death');
+
+  if (window.HorrorFX) {
+    window.HorrorFX.flashRed(800);
+    setTimeout(() => window.HorrorFX.glitch(400), 200);
+  }
 
   await seq([
     ['══════════════════════════════════════', 'divider', 0],
-    ['서울 지하철 6호선', 'title', 80],
-    ['LINE 6 · SURVIVAL ADVENTURE', 'subtitle', 200],
+    ['공포의 6호선: 저주받은 궤도', 'title', 80],
+    ['THE CURSED LOOP · SURVIVAL ORDEAL', 'subtitle', 200],
     ['══════════════════════════════════════', 'divider', 320],
     ['', 'blank', 440],
   ]);
 
   await printAscii([
     ['  ╔══════════════════════════════╗', ''],
-    ['  ║   ◀  SEOUL METRO LINE 6  ▶   ║', 'hl'],
-    ['  ║  응암 ○────────────○ 신내    ║', ''],
-    ['  ║     39개 역  / 36.4 km       ║', ''],
-    ['  ║   [ 지금 승차하시겠습니까? ]  ║', 'hl'],
+    ['  ║   ◀  THE CURSED LINE 6  ▶    ║', 'hl'],
+    ['  ║  응암 ☠────────────☠ 신내    ║', ''],
+    ['  ║     39개의 무덤  / 36.4 km     ║', ''],
+    ['  ║   [ 당신의 영혼을 맡기겠습니까? ]  ║', 'hl'],
     ['  ╚══════════════════════════════╝', ''],
-  ], 'ascii-station', { rowDelay: 70, label: '// SEOUL METRO LINE 6 SYSTEM', sound: 'modem' });
+  ], 'ascii-station', { rowDelay: 70, label: '// CURSED LOOP SYSTEM', sound: 'modem' });
 
   await seq([
     ['', 'blank', 100],
-    ['오늘도 어김없이 6호선은 달린다.', 'narrator', 200],
-    ['응암에서 신내까지, 39개의 역을 지나는 이 노선에는', 'narrator', 450],
-    ['오늘도 수많은 이야기가 스쳐간다.', 'narrator', 700],
+    ['어둠을 뚫고, 오늘도 6호선은 당신의 비명을 싣고 달린다.', 'narrator', 200],
+    ['응암에서 신내까지, 39개의 무덤을 지나는 이 노선에는', 'narrator', 450],
+    ['오늘도 길을 잃은 영혼들이 떠돈다.', 'narrator', 700],
     ['', 'blank', 900],
-    ['차체가 덜컹이며 낮은 진동이 발바닥을 울린다.', 'narrator', 1100],
-    ['희미한 형광등 아래, 마스크를 쓴 사람들의 눈동자가 당신을 스치듯 지나간다.', 'narrator', 1400],
-    ['공기 중에선 희미한 철 냄새와… 뭔가 이상한, 단내가 섞여 있다.', 'highlight', 1700],
+    ['차체가 울부짖으며 낮은 비명이 발바닥을 타고 올라온다.', 'narrator', 1100],
+    ['창백한 형광등 아래, 눈이 도려내진 자들의 시선이 당신을 핥고 지나간다.', 'narrator', 1400],
+    ['공기 중에선 비릿한 철 냄새와… 썩어가는 내장의 단내가 섞여 있다.', 'highlight', 1700],
     ['', 'blank', 1900],
-    ['이 노선의 승객은 누구입니까.', 'highlight', 2000],
+    ['이 지옥의 순례자는 누구입니까.', 'highlight', 2000],
   ]);
 
   // 이름 입력 (예시 3개 + 직접 입력)

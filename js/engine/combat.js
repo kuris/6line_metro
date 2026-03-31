@@ -39,11 +39,11 @@ const CombatEngine = (() => {
       statusBox.innerHTML = `
         <div class="atb-hp-wrap enemy">
           <div id="battle-e-hp" class="atb-hp-fill enemy" style="width:100%"></div>
-          <div id="battle-e-hp-txt" class="atb-hp-text">ENEMY STABILITY: ${h.hp}%</div>
+          <div id="battle-e-hp-txt" class="atb-hp-text">怨 (원) - 원혼의 집착: ${h.hp}%</div>
         </div>
         <div class="atb-hp-wrap player">
           <div id="battle-p-hp" class="atb-hp-fill player" style="width:${G.health}%"></div>
-          <div id="battle-p-hp-txt" class="atb-hp-text">PLAYER VITALITY: ${G.health}%</div>
+          <div id="battle-p-hp-txt" class="atb-hp-text">骸 (해) - 육신의 한계: ${G.health}%</div>
         </div>
         <div class="atb-gauge-wrap">
           <div id="battle-atb-fill" class="atb-gauge-fill"></div>
@@ -67,9 +67,9 @@ const CombatEngine = (() => {
 
       const updateUI = () => {
         eHpBar.style.width = (h.hp / h.maxHp * 100) + '%';
-        eHpTxt.textContent = `TARGET: ${Math.ceil(h.hp)}%`;
+        eHpTxt.textContent = `怨 (원): ${Math.ceil(h.hp)}%`;
         pHpBar.style.width = G.health + '%';
-        pHpTxt.textContent = `VITALITY: ${G.health}/100`;
+        pHpTxt.textContent = `骸 (해): ${G.health}/100`;
         atbBar.style.width = playerAtb + '%';
       };
 
@@ -148,31 +148,42 @@ const CombatEngine = (() => {
           return;
         }
 
-        if (action === 'observe') {
-          observationLevel++;
-          h.speed *= 0.85;
-          log('개체의 행동 패턴을 분석했습니다. (속도 저하)', 'system');
-        } else if (action === 'respond') {
-          const dmg = 10 + Math.random() * 10 + (observationLevel * 5);
-          h.hp -= dmg;
-          log(`${h.name}에게 유의미한 충격을 주었습니다.`, 'system');
-        } else if (action === 'companion') {
-          log(`${G.companions[0].name}이(가) 대응을 돕습니다!`, 'highlight');
-          h.hp -= 15;
-          playerAtb += 30;
-        } else if (action === 'retreat') {
-          if (Math.random() < 0.3 + (observationLevel * 0.15)) {
-            log('성공적으로 위협 지역에서 이탈했습니다.', 'system');
-            isBattleEnd = true;
-            cleanup();
-            resolve(true);
-            return;
-          } else {
-            log('이탈에 실패했습니다! 경로가 차단되었습니다.', 'danger');
-          }
+        switch (action) {
+          case 'observe': // 관찰/분석 -> 怨(원)을 읽음
+            const dmgObs = (20 + (G.sanity / 5));
+            h.hp -= dmgObs;
+            log(`${h.name}의 기괴한 움직임을 읽었습니다. 원혼(怨)이 요동칩니다.`, 'info');
+            playerAtb = 0;
+            break;
+
+          case 'respond': // 대기/카운터 -> 직접적인 타격
+            if (window.HorrorFX) window.HorrorFX.glitch(200);
+            const dmgAtk = (15 + (G.health / 4));
+            h.hp -= dmgAtk;
+            log(`${h.name}의 숨통을 향해 일격을 가했습니다! 검은 액체가 쏟아집니다.`, 'danger');
+            playerAtb = 0;
+            break;
+
+          case 'retreat': // 이탈
+            if (Math.random() < 0.4) {
+              log('어둠 속으로 몸을 던져 위협으로부터 멀어지는 데 성공했습니다.', 'life');
+              isBattleEnd = true;
+              cleanup();
+              resolve(true);
+              return;
+            } else {
+              log('탈출을 시도했으나 차가운 손이 당신의 발목을 낚아챕니다!', 'danger');
+              playerAtb = 0;
+            }
+            break;
+            
+          case 'companion':
+            log(`${G.companions[0].name}이(가) 대응을 돕습니다!`, 'highlight');
+            h.hp -= 15;
+            playerAtb = 0;
+            break;
         }
 
-        playerAtb = 0;
         updateUI();
         
         if (h.hp <= 0) {
@@ -212,17 +223,35 @@ const CombatEngine = (() => {
             return;
           }
 
-          const dmg = h.atk * (0.8 + Math.random() * 0.4);
-          G.health -= Math.floor(dmg);
-          log(`${h.name}의 물리적 접촉! 본체 손상 발생 (-${Math.floor(dmg)})`, 'danger');
+          const eDmg = h.atk + (Math.random() * 5);
+          G.health -= Math.floor(eDmg);
+          if (window.HorrorFX) window.HorrorFX.flashRed(400);
+          log(`${h.name}이(가) 당신의 살점을 도려냈습니다! 뼈가 으스러지는 소리가 들립니다.`, 'danger');
+          enemyAtb = 0;
           updateUI();
-          
+
           if (G.health <= 0) {
-            log('치명적 신체 손상. 통신 두절...', 'danger');
             isBattleEnd = true;
-            setTimeout(() => { cleanup(); resolve(false); }, 1000);
+            log('의식이 흐려집니다... 당신은 이제 이곳의 일부가 되었습니다.', 'danger');
+            setTimeout(() => {
+              cleanup();
+              resolve(false);
+            }, 800);
             return;
           }
+        }
+
+        // 승리 판정
+        if (h.hp <= 0) {
+          isBattleEnd = true;
+          if (window.HorrorFX) window.HorrorFX.scare();
+          log(`${h.name}의 존재를 완전히 지워버렸습니다. 하지만 손에 남은 온기가 저주처럼 느껴집니다.`, 'life');
+          updateUI();
+          setTimeout(() => {
+            cleanup();
+            resolve(true);
+          }, 800);
+          return;
         }
 
         updateUI();

@@ -11,66 +11,60 @@
    ────────────────────────────────────────── */
 const RANDOM_EVENT_POOL = [
 
-  /* ── 1. 취객의 접근 (Dangerous) ── */
+  /* ── 1. 취객의 접근 (The Vessel Eater) ── */
   {
     id: 're_drunk_approaches',
     tod: ['evening', 'night', 'dawn'], weight: 5,
     async fn() {
+      if (window.HorrorFX) window.HorrorFX.flashRed(500);
       await seq([
         ['', 'blank', 0],
-        ['비틀거리는 취객이 다가온다. 눈의 핏발이 기괴하게 서 있다.', 'narrator', 200],
-        ['"너... 너도 단내 나잖아..."', 'danger', 500],
-        ['거친 손길로 당신의 멱살을 잡으려 한다.', 'danger', 800],
+        ['비틀거리는 형체가 다가온다. 눈꺼풀이 잘려 나간 채 핏발 서린 안구가 당신을 고정한다.', 'narrator', 200],
+        ['"너... 너도 영혼에 단내 나잖아... 공평하게 한 입만...!"', 'danger', 500],
+        ['차가운 손이 당신의 목줄기(Vessel)를 낚아채려 한다.', 'danger', 800],
       ]);
       await choices([
-        ['맞서 싸운다', async () => {
+        ['결사적으로 맞서 싸운다 (저항)', async () => {
           if (G.playerGender === '남성' && (G.playerAge === '20대' || G.playerAge === '30대')) {
             await seq([
-              ['강하게 팔을 쳐내고 취객을 밀쳐냈다.', 'highlight', 200],
-              ['당신의 기세에 늘린 취객이 뒤로 넘어졌다.', 'narrator', 500],
+              ['강하게 팔을 쳐내고 그의 흉부를 발로 찼다.', 'highlight', 200],
+              ['괴물은 꺽꺽대며 바닥을 기어 다른 칸으로 사라졌다.', 'narrator', 500],
             ]);
             await modifyStat('sanity', 10);
-            G.score += 2; updateStats();
+            G.score += 5; updateStats();
           } else {
+            if (window.HorrorFX) window.HorrorFX.glitch(400);
             await seq([
-              ['저항했지만 감염된 자의 힘이 비정상적으로 강했다.', 'danger', 200],
-              ['손톱에 긁히며 바닥에 뒹굴었다.', 'death', 500],
+              ['저항했지만 침식된 자의 힘은 상상을 초월했다.', 'danger', 200],
+              ['그의 손가락이 당신의 살점을 파고들어 한 조각을 삼켜버렸다.', 'death', 500],
             ]);
-            await modifyStat('health', -20);
-            await modifyStat('infection', 10);
+            await modifyStat('health', -25);
+            await modifyStat('infection', 15);
           }
         }],
-        ['도망간다', async () => {
+        ['어둠 속으로 도망친다 (회피)', async () => {
           if (G.playerAge === '10대' || G.playerAge === '20대') {
             await seq([
-              ['재빠르게 옆 칸으로 도망쳤다.', 'narrator', 200],
-              ['가빠진 숨을 고르며 마음을 진정시킨다.', 'narrator', 500],
+              ['심장이 터질 듯한 공포를 느끼며 옆 칸으로 도주했다.', 'narrator', 200],
+              ['뒤를 돌아보자, 그가 당신의 발자국에 고인 피를 핥고 있다.', 'death', 500],
             ]);
-            await modifyStat('sanity', -5);
+            await modifyStat('sanity', -10);
           } else {
             await seq([
-              ['도망치려 했으나 발이 꼬였다.', 'danger', 200],
-              ['등을 세게 부딪히며 옆 칸으로 간신히 넘어갔다.', 'narrator', 500],
+              ['도망치려 했으나 공포로 다리가 풀렸다.', 'danger', 200],
+              ['등을 세게 부딪히며 옆 칸으로 간신히 넘어갔다. 뼈가 어긋나는 소리가 들린다.', 'narrator', 500],
             ]);
-            await modifyStat('health', -10);
-            await modifyStat('sanity', -10);
+            await modifyStat('health', -15);
+            await modifyStat('sanity', -15);
           }
         }],
-        ['상대하지 않고 무시한다', async () => {
+        ['미동도 없이 죽은 척한다 (도박)', async () => {
           await seq([
-            ['고개를 돌렸지만, 그 상대를 가볍게 볼 일이 아니었다. 취객이 어깨를 상하게 후려쳤다.', 'danger', 200],
+            ['숨을 죽였지만, 그는 당신의 땀 냄새를 즐기듯 얼굴을 핥고 지나갔다.', 'danger', 200],
           ]);
-          await modifyStat('health', -15);
-        }],
-        ...(G.companions && G.companions.length > 0 ? [[`동행자 ${G.companions[0].name}에게 도와달라고 소리친다`, async () => {
-          const comp = G.companions[0];
-          await seq([
-            [`"${comp.name}! 도와주세요!" 당신의 외침에 그가 취객의 어깨를 밀쳤다.`, 'narrator', 200],
-            [`취객과 ${comp.name}이(가) 엉켜 바닥을 굴렀다.`, 'danger', 500],
-          ]);
-          await modifyStat('sanity', -5);
-          await print(`${comp.name}의 옷이 찢어지고 상처가 났다.`, 'danger');
-        }]] : []),
+          await modifyStat('health', -20);
+          await modifyStat('sanity', -20);
+        }]
       ]);
     }
   },
