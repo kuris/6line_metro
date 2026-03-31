@@ -389,7 +389,9 @@ const TrainPanel = (() => {
         // 7호차 이동 시 이상 현상 트리거
         if (newCar === 7 && typeof print !== 'undefined') {
           print(`[${prev}호차 → 7호차로 이동했다. 주위가 지나치게 조용하다.]`, 'danger').then(async () => {
-            if (!G.flags.girl_seen && typeof showEventImage === 'function') {
+            const hasSeen = G.flags.girl_seen;
+            const shouldShow = (!hasSeen) ? true : (Math.random() < 0.4);
+            if (shouldShow && typeof showEventImage === 'function') {
               G.flags.girl_seen = true;
               let gImg = 'images/chracter/anxious_girl.png';
               if (Math.random() > 0.5) gImg = 'images/chracter/normal_girl.png';

@@ -110,6 +110,19 @@ async function sceneNextStation(nextIdx) {
     if (typeof showEventImage === 'function') {
       await showEventImage('images/subway/' + imgFname, text, 1400, { sound: 'glitch', styleClass: 'style-cctv' });
     }
+  } else if (imgFname && Math.random() < 0.2) {
+    // 역 배경이 안 떴더라도 20% 확률로 "유령 승객" 캐릭터가 스쳐지나감
+    const ghostMsgs = [
+      `반대편 승강장에 누군가 우두커니 서 있습니다.`,
+      `방금 스쳐 지나간 사람의 얼굴이... 없었습니다.`,
+      `"다음 역... 아니, 여긴 어디지?" 등 뒤에서 속삭임이 들립니다.`,
+      `피로 가득한 누군가의 시선이 느껴집니다.`
+    ];
+    const gText = ghostMsgs[Math.floor(Math.random() * ghostMsgs.length)];
+    const gImg = (Math.random() < 0.5) ? 'images/chracter/mad_girl.png' : 'images/chracter/fear_boy.png';
+    if (typeof showEventImage === 'function') {
+      await showEventImage(gImg, gText, 1300, { sound: 'glitch', styleClass: 'style-ghost' });
+    }
   }
 
   await TrainPanel.playArrival(st.name, null);
