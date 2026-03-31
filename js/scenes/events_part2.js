@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   scenes/events_part2.js (612 ~ 623)
+   scenes/events_part2.js (621 ~ 632)
    망원 ~ 버티고개 구간 이벤트
    ═══════════════════════════════════════════════════ */
 
@@ -9,7 +9,7 @@ window.STATION_EVENTS = window.STATION_EVENTS || {};
 
 Object.assign(STATION_EVENTS, {
 
-  /* ── 망원 (612) ── */
+  /* ── 망원 (621) ── */
   async ev_mangwon(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('망원 — 길 잃은 통근자', 'event');
@@ -73,7 +73,7 @@ Object.assign(STATION_EVENTS, {
     choices(mangwonOpts);
   },
 
-  /* ── 합정 (613) ── */
+  /* ── 합정 (622) ── */
   async ev_hapjeong(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('합정 — 취객들의 언쟁', 'event');
@@ -123,7 +123,7 @@ Object.assign(STATION_EVENTS, {
     choices(hapjeongOpts);
   },
 
-  /* ── 광흥창 (615) ── */
+  /* ── 광흥창 (624) ── */
   async ev_gwangheungchang(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('광흥창 — 취객의 하소연', 'event');
@@ -173,7 +173,7 @@ Object.assign(STATION_EVENTS, {
     choices(gwangOpts);
   },
 
-  /* ── 공덕 (617) ── */
+  /* ── 공덕 (626) ── */
   async ev_gongdeok(stIdx) {
     TrainPanel.setState('danger');
     sfx.alarm();
@@ -207,7 +207,7 @@ Object.assign(STATION_EVENTS, {
     choices(opts);
   },
 
-  /* ── 삼각지 (619) ── */
+  /* ── 삼각지 (628) ── */
   async ev_samgakji(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('삼각지 — 주인 없는 상자', 'event');
@@ -239,7 +239,7 @@ Object.assign(STATION_EVENTS, {
     choices(opts);
   },
 
-  /* ── 이태원 (621) ── */
+  /* ── 이태원 (630) ── */
   async ev_itaewon(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('이태원 — 외국인 관광객', 'event');
@@ -302,7 +302,7 @@ Object.assign(STATION_EVENTS, {
     choices(itaewonOpts);
   },
 
-  /* ── 버티고개 (623) ── */
+  /* ── 버티고개 (632) ── */
   async ev_berti(stIdx) {
     TrainPanel.setState('danger');
     sfx.alarm();

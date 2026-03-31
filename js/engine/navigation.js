@@ -69,8 +69,8 @@ async function sceneNextStation(nextIdx) {
   G.moveCount++;
   updateStats();
 
-  // 이동 중 랜덤 소사건 (이벤트 역 이동 전, 20% 확률로 추가 발동)
-  if (Math.random() < 0.20) await maybeRandomEvent();
+  // 이동 중 랜덤 소사건 (이벤트 역 이동 전, 45% 확률로 추가 발동)
+  if (Math.random() < 0.45) await maybeRandomEvent();
 
   // 열차 주행 → 도착 연출
   const prevIdx = nextIdx - (G.dirStep || 1);
@@ -158,10 +158,32 @@ async function sceneNextStation(nextIdx) {
     }
   }
 
-  // 이벤트 있는 역이면 씬 실행, 없으면 통과
-  if (st.hasEvent && STATION_EVENTS[st.eventId]) {
+  // 1. 고정 메인 스토리 이벤트 확인
+  if (st.hasEvent && st.eventId && STATION_EVENTS[st.eventId]) {
     await STATION_EVENTS[st.eventId](nextIdx);
-  } else {
+  } 
+  // 2. 고정 이벤트가 없거나 범용 슬롯인 경우 풀에서 랜덤 추출
+  else if (st.hasEvent || Math.random() < 0.25) { 
+    // 25% 확률로 돌발 조우 발생 (hasEvent가 아니더라도)
+    const poolType = (Math.random() < 0.4 + (G.infection / 200)) ? 'battle' : 'generic';
+    const pool = EVENT_POOL[poolType] || [];
+    
+    // 아직 보지 않은 이벤트 필터링
+    const available = pool.filter(ev => !G.seenEvents.includes(ev.id));
+    
+    if (available.length > 0) {
+      const selected = available[Math.floor(Math.random() * available.length)];
+      G.seenEvents.push(selected.id);
+      
+      TrainPanel.addLog(`돌발 조우: ${selected.title}`, 'warn');
+      await selected.run(nextIdx);
+    } else {
+      // 모든 이벤트를 다 봤다면 일반 트리비아 표시
+      await showTriviaPass(st, nextIdx);
+    }
+  } 
+  // 3. 아무 이벤트도 없는 경우
+  else {
     await showTriviaPass(st, nextIdx);
   }
 }

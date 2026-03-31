@@ -730,18 +730,207 @@ const RANDOM_EVENT_POOL = [
     }
   },
 
+  /* ── 4. 좀비 돌진 (ATB 전투) ── */
+  {
+    id: 'atb_zombie_rush',
+    tod: 'all', weight: 8,
+    async fn() {
+      await seq([
+        ['차창 끝에서 피투성이의 남자가 기괴한 속도로 달려온다!', 'danger', 400],
+        ['그의 입에는 아직... 사람의 손가락이 물려 있다.', 'danger', 800],
+      ]);
+
+      const res = await startATBCombat({
+        desc: '감염자가 당신을 향해 도약합니다!',
+        monsterImg: 'images/chracter/mad_girl.png', // 임시 좀비 대용
+        timeLimit: 2200,
+        actions: [
+          { label: '옆으로 구른다', resolveValue: 'dodge' },
+          { label: '발로 차낸다', resolveValue: 'kick' },
+          { label: '가방으로 막는다', resolveValue: 'block' },
+          { label: '비명을 지른다', resolveValue: 'scream' }
+        ]
+      });
+
+      if (res === 'dodge' || res === 'kick') {
+        await seq([
+          ['간발의 차로 공격을 피했다!', 'highlight', 200],
+          ['남자는 바닥을 굴러 반대편 문에 머리를 박고 쓰러졌다.', 'narrator', 500],
+        ]);
+        G.score += 5; updateStats();
+      } else if (res === 'block') {
+        await seq([
+          ['가방이 찢어지며 큰 충격을 받았지만, 몸은 보호했다.', 'warn', 200],
+          ['심장이 터질 듯이 뛴다.', 'narrator', 500],
+        ]);
+        await modifyStat('health', -5);
+        await modifyStat('sanity', -10);
+      } else {
+        // timeout or scream
+        await seq([
+          ['끄악! 날카로운 이빨이 어깨를 파고든다.', 'death', 200],
+          ['살점이 뜯겨 나가는 고통에 눈앞이 번쩍인다.', 'death', 500],
+        ]);
+        await modifyStat('health', -30);
+        await modifyStat('infection', 15);
+      }
+    }
+  },
+
+  /* ── 5. 그림자의 손 (ATB 전투) ── */
+  {
+    id: 'atb_shadow_grasp',
+    tod: ['night', 'dawn'], weight: 6,
+    async fn() {
+      await seq([
+        ['갑자기 전등이 깜빡이더니, 의자 밑에서 검은 손들이 솟아난다.', 'danger', 400],
+        ['차가운 손가락들이 당신의 발목을 움켜잡는다.', 'danger', 800],
+      ]);
+
+      const res = await startATBCombat({
+        desc: '그림자가 당신을 바닥으로 끌어당깁니다!',
+        monsterImg: 'images/chracter/fear_boy.png',
+        timeLimit: 1800,
+        actions: [
+          { label: '필사적으로 뿌리친다', resolveValue: 'struggle' },
+          { label: '기운을 집중한다', resolveValue: 'focus' },
+          { label: '눈을 감고 기도한다', resolveValue: 'pray' },
+          { label: '그냥 끌려간다', resolveValue: 'surrender' }
+        ]
+      });
+
+      if (res === 'struggle') {
+        await seq([
+          ['가까스로 발목을 빼냈다. 신발 한 짝이 벗겨질 뻔했다.', 'highlight', 200],
+          ['그림자들은 공기 중으로 흩어졌다.', 'narrator', 500],
+        ]);
+        await modifyStat('sanity', -5);
+      } else if (res === 'focus' && G.playerJob === '오컬트 연구자') {
+        await seq([
+          ['품 안의 부적이 뜨겁게 달아오르며 빛을 뿜는다.', 'life', 200],
+          ['악취를 풍기던 손들이 비명을 지르며 타올랐다.', 'highlight', 500],
+        ]);
+        G.score += 10; updateStats();
+      } else {
+        await seq([
+          ['검은 그림자가 당신의 영혼을 갉아먹는다.', 'death', 200],
+          ['정신이 아득해지며 깊은 수렁으로 빠져드는 기분이다.', 'death', 500],
+        ]);
+        await modifyStat('sanity', -25);
+      }
+    }
+  },
+
+  /* ── 6. 틈새의 속삭임 (ATB 전투) ── */
+  {
+    id: 'atb_cursed_whisper',
+    tod: ['evening', 'night', 'dawn'], weight: 7,
+    async fn() {
+      await seq([
+        ['"살려줘... 여기서 나가게 해줘..."', 'whisper', 400],
+        ['문틈 사이로 창백한 손가락들이 비져나오며 속삭임이 커진다.', 'danger', 800],
+      ]);
+
+      const res = await startATBCombat({
+        desc: '유혹의 속삭임이 당신의 정신을 파고듭니다!',
+        monsterImg: 'images/chracter/fear_boy.png',
+        timeLimit: 2500,
+        actions: [
+          { label: '귀를 막고 노래한다', resolveValue: 'hum' },
+          { label: '문을 발로 차서 닫는다', resolveValue: 'kick' },
+          { label: '누군지 묻는다', resolveValue: 'ask' },
+          { label: '멍하니 듣는다', resolveValue: 'listen' }
+        ]
+      });
+
+      if (res === 'hum') {
+        await seq([
+          ['[희망의 멜로디] 소리를 내어 속삭임을 묻어버렸다.', 'life', 200],
+          ['손가락들이 움츠러들며 사라졌다.', 'highlight', 450],
+        ]);
+        await modifyStat('sanity', 5);
+      } else if (res === 'kick') {
+        await seq([
+          ['쾅! 문을 세차게 걷어찼다. 손가락들이 짓눌리는 기괴한 소리가 들렸다.', 'danger', 200],
+          ['속삭임이 끔찍한 비명으로 변하더니 멎었다.', 'result', 450],
+        ]);
+        G.score += 5; updateStats();
+      } else {
+        await seq([
+          ['속삭임에 매료되어 한참을 멍하니 서 있었다.', 'death', 200],
+          ['정신이 오염되는 기분이다. 눈가에 검은 핏줄이 섰다.', 'death', 450],
+        ]);
+        await modifyStat('sanity', -20);
+        await modifyStat('infection', 5);
+      }
+    }
+  },
+
+  /* ── 7. 오작동하는 문 (ATB 전투) ── */
+  {
+    id: 'atb_door_glitch',
+    tod: 'all', weight: 6,
+    async fn() {
+      await seq([
+        ['치익- 칙- 열차의 문이 기괴한 소리를 내며 열리고 닫히기를 반복한다.', 'danger', 400],
+        ['열린 문 사이로 터널의 차가운 돌벽이 보이고, 무언가 안으로 들어오려 한다.', 'danger', 800],
+      ]);
+
+      const res = await startATBCombat({
+        desc: '문이 완전히 열리기 전에 조치를 취해야 합니다!',
+        monsterImg: 'images/subway/door_dark.png', // 문 이미지 대용
+        timeLimit: 2000,
+        actions: [
+          { label: '비상 수동 레버 조작', resolveValue: 'lever' },
+          { label: '몸으로 문을 밀어 닫는다', resolveValue: 'push' },
+          { label: '뒷걸음질 친다', resolveValue: 'back' },
+          { label: '밖으로 뛰어내린다', resolveValue: 'jump' }
+        ]
+      });
+
+      if (res === 'lever' && G.playerJob === '회사원') {
+        await seq([
+          ['매일 보던 비상 레버의 위치를 정확히 기억해냈다.', 'highlight', 200],
+          ['철컥! 소리와 함께 문이 고정되며 잠겼다.', 'life', 450],
+        ]);
+        G.score += 7; updateStats();
+      } else if (res === 'lever' || res === 'push') {
+        await seq([
+          ['온 힘을 다해 문을 닫았다. 무언가 문 끝에 끼어 절단되는 소리가 났다.', 'danger', 200],
+          ['간발의 차로 위기를 넘겼다.', 'highlight', 450],
+        ]);
+        await modifyStat('health', -5);
+      } else if (res === 'jump') {
+        await seq([
+          ['광기로 인해 선로로 뛰어내리려 했으나, 동행자가 당신을 낚아챘다!', 'warn', 200],
+          ['"정신 차려요! 죽고 싶은 거예요?"', 'dialog', 450],
+        ]);
+        await modifyStat('health', -20);
+        await modifyStat('sanity', -30);
+      } else {
+        await seq([
+          ['문이 활짝 열리고 터널의 냉기가 쏟아졌다.', 'death', 200],
+          ['어둠 속에서 뻗어 나온 손들에 긁혀 피를 흘린다.', 'death', 500],
+        ]);
+        await modifyStat('health', -25);
+        await modifyStat('infection', 10);
+      }
+    }
+  },
+
 ];
+
 
 
 /* ──────────────────────────────────────────
    랜덤 소사건 발동 함수
-   30% 확률 / 같은 사건 연속 안 나오게
+   85% 확률 / 같은 사건 연속 안 나오게
    ────────────────────────────────────────── */
 let _lastRandomId = null;
 
 async function maybeRandomEvent() {
-  // 30% 확률
-  if (Math.random() > 0.30) return;
+  // 85% 확률 상향
+  if (Math.random() > 0.85) return;
 
   const tod = G.timeOfDay || 'noon';
 

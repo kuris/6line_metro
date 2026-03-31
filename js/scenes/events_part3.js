@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   scenes/events_part3.js (626 ~ 638)
+   scenes/events_part3.js (635 ~ 648)
    신당 ~ 봉화산 구간 이벤트 (통합 및 최적화)
    ═══════════════════════════════════════════════════ */
 
@@ -9,7 +9,7 @@ window.STATION_EVENTS = window.STATION_EVENTS || {};
 
 Object.assign(STATION_EVENTS, {
 
-  /* ── 신당 (626) ── */
+  /* ── 신당 (635) ── */
   async ev_sindang(stIdx) {
     TrainPanel.setState('crowded');
     TrainPanel.addLog('신당 — 중앙시장 상인들과 기묘한 노파', 'event');
@@ -77,7 +77,7 @@ Object.assign(STATION_EVENTS, {
     choices(opts);
   },
 
-  /* ── 동묘앞 (627) ── */
+  /* ── 동묘앞 (636) ── */
   async ev_dongmyo(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('동묘앞 — 벼룩시장 할아버지', 'event');
@@ -137,7 +137,7 @@ Object.assign(STATION_EVENTS, {
     choices(dongmyoOpts);
   },
 
-  /* ── 안암 (630) ── */
+  /* ── 안암 (639) ── */
   async ev_anam(stIdx) {
     TrainPanel.setState('crowded');
     TrainPanel.addLog('안암 — 청춘의 열기와 학구열', 'event');
@@ -183,7 +183,7 @@ Object.assign(STATION_EVENTS, {
     choices(opts);
   },
 
-  /* ── 돌곶이 (634) ── */
+  /* ── 돌곶이 (643) ── */
   async ev_dolgoji(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('돌곶이 — 무임승차 단속', 'warn');
@@ -223,7 +223,7 @@ Object.assign(STATION_EVENTS, {
     ]);
   },
 
-  /* ── 태릉입구 (636) ── */
+  /* ── 태릉입구 (645) ── */
   async ev_taereung(stIdx) {
     TrainPanel.setState('crowded');
     TrainPanel.addLog('태릉입구 — 7호선 환승 러시', 'warn');
@@ -254,49 +254,100 @@ Object.assign(STATION_EVENTS, {
     ]);
   },
 
-  /* ── 봉화산 (638) ── */
+  /* ── 봉화산 (647) ── */
   async ev_bonghwasan(stIdx) {
+    TrainPanel.setState('danger');
+    sfx.chime();
+    TrainPanel.addLog('봉화산 — 최후의 갈림길', 'warn');
+    
+    await seq([
+      ['봉화산역. 과거 이곳이 종착역이었던 흔적이 곳곳에 남아있다.', 'announce', 200],
+      ['하지만 열차는 멈추지 않고 신내를 향해 선로를 바꾼다.', 'narrator', 450],
+      ['갑자기 차내 전등이 미친 듯이 깜빡이며 붉은 비상등이 켜진다.', 'danger', 750],
+    ]);
+
+    const opts = [
+      ['① 비상 레버를 당겨 열차를 멈추려 시도한다', async () => {
+        await seq([
+          ['[치이익!] 비상 레버를 당겼지만, 무언가에 의해 고정된 듯 꿈쩍도 하지 않는다.', 'danger', 200],
+          ['오히려 반동으로 인해 어깨를 크게 다쳤다.', 'death', 450],
+        ]);
+        await modifyStat('health', -15);
+        await modifyStat('sanity', -10);
+        TrainPanel.playDepart();
+        await sceneNextStation(stIdx + (G.dirStep || 1));
+      }],
+      ['② 마음을 다잡고 마지막 종착역까지 운명을 맡긴다', async () => {
+        G.score += 5; G.sanity = Math.min(100, G.sanity + 5); updateStats();
+        await seq([
+          ['깊은 숨을 내쉬며 자리에 앉았다. 이제 끝이 머지않았다.', 'highlight', 200],
+          ['불안이 걷히고 차분한 정적이 차내를 감싼다.', 'life', 450],
+        ]);
+        TrainPanel.playDepart();
+        await sceneNextStation(stIdx + (G.dirStep || 1));
+      }]
+    ];
+
+    if (G.playerJob === '소방관' || G.playerJob === '형사') {
+      opts.push(['[직업 특수] 차내 상황을 살피며 승객들을 안심시킨다', async () => {
+        TrainPanel.addLog('통제력 발휘', 'event');
+        G.score += 10; updateStats();
+        await seq([
+          ['"모두 침착하세요! 곧 종점에 도착합니다!"', 'highlight', 200],
+          ['당신의 단호한 목소리에 동요하던 승객들이 안정을 찾는다.', 'life', 450],
+          ['집단의 안정이 당신의 생존 의지도 북돋운다.', 'result', 700],
+        ]);
+        TrainPanel.playDepart();
+        await sceneNextStation(stIdx + (G.dirStep || 1));
+      }]);
+    }
+
+    choices(opts);
+  },
+
+  /* ── 신내 (648) ── */
+  async ev_sinnae(stIdx) {
     TrainPanel.setState('arriving');
     sfx.chime();
-    TrainPanel.addLog('봉화산 — 여정의 끝', 'new');
+    TrainPanel.addLog('신내 — 여정의 완성', 'new');
+    
     await printAscii([
-      [`  ╔══════════════════════════════╗`, ''],
-      [`  ║  종착역  ·  FINAL STATION   ║`, 'hl'],
-      [`  ║  봉화산  BONGHWASAN  638    ║`, 'hl'],
-      [`  ╚══════════════════════════════╝`, ''],
+      [`  ╔══════════════════════════════════╗`, ''],
+      [`  ║      최  종  종  착  역        ║`, 'hl'],
+      [`  ║   SINNAE  ·  신 내 (648)       ║`, 'hl'],
+      [`  ╚══════════════════════════════════╝`, ''],
     ], 'ascii-station', { rowDelay: 70 });
 
-    if (hasItem('수상한 메모지')) {
-      await seq([
-        ['종착역에 도착했다. 하지만 메모지의 경고가 귓가를 맴돈다.', 'death', 200],
-        ['"봉화산에서 내리지 마세요."', 'death', 450],
-      ]);
-      choices([
-        ['① 경고를 무시하고 내린다', async () => {
-          await seq([
-            ['내렸다. 차가운 바람이 불어온다.', 'narrator', 200],
-            ['아무 일도 일어나지 않았지만, 왠지 등 뒤가 서늘하다.', 'result', 450],
-          ]);
-          await sceneEnding();
-        }],
-        ['② 열차에 남은 채 회차를 기다린다', async () => {
-          G.score += 10; updateStats();
-          await seq([
-            ['자리를 지키자 플랫폼의 불이 꺼지고 열차가 어둠 속으로 들어간다.', 'death', 200],
-            ['잠시 후, 정체 모를 발소리가 객차 바깥을 스쳐 지나갔다.', 'whisper', 450],
-            ['당신은 진실에 한 발짝 다가갔다. 하지만 그 대가는 무엇일까.', 'result', 700],
-          ]);
-          await sceneEnding();
-        }]
-      ]);
-    } else {
-      await seq([
-        ['열차가 멈췄다. 안내 방송이 들려온다.', 'announce', 200],
-        [`${gn()}은(는) 무거운 발걸음으로 플랫폼에 내렸다.`, 'narrator', 450],
-        ['오늘의 생존 기록이 마무리된다.', 'result', 700],
-      ]);
-      await sceneEnding();
+    await seq([
+      ['열차가 천천히 속도를 줄이며 지상 승강장으로 들어선다.', 'announce', 200],
+      ['창밖으로 새벽의 여명이 비치며, 6호선 터널의 어둠이 걷히고 있다.', 'highlight', 500],
+      ['"우리 열차의 마지막 역, 신내역에 도착했습니다."', 'announce', 800],
+    ]);
+
+    const finalOpts = [
+      ['① 무거운 문을 열고 한 걸음을 내디딘다', async () => {
+        await seq([
+          ['치익- 소리와 함께 문이 열리고, 상쾌한 바깥 공기가 유입된다.', 'life', 200],
+          ['당신은 드디어 6호선의 악몽에서 벗어났다.', 'highlight', 500],
+        ]);
+        await sceneEnding();
+      }]
+    ];
+
+    if (G.companions && G.companions.length > 0) {
+      const compNames = G.companions.map(c => c.name).join(', ');
+      finalOpts.push([`② 동행자(${compNames})와 함께 플랫폼을 걷는다`, async () => {
+        G.score += 20; updateStats();
+        await seq([
+          ['서로의 온기를 느끼며 플랫폼을 내려간다.', 'life', 200],
+          ['"살아남았네요. 정말로..." 누군가의 흐느낌이 들린다.', 'dialog', 450],
+          ['혼자가 아니었기에 도달할 수 있었던 결말이다.', 'highlight', 700],
+        ]);
+        await sceneEnding();
+      }]);
     }
+
+    choices(finalOpts);
   },
 
 });

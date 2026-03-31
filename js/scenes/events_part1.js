@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   scenes/events_part1.js (601 ~ 610)
+   scenes/events_part1.js (610 ~ 619)
    응암 ~ 월드컵경기장 구간 이벤트
    ═══════════════════════════════════════════════════ */
 
@@ -9,7 +9,7 @@ window.STATION_EVENTS = window.STATION_EVENTS || {};
 
 Object.assign(STATION_EVENTS, {
 
-  /* ── 응암 (601) ── */
+  /* ── 응암 (610) ── */
   async ev_eungam(stIdx) {
     TrainPanel.setState('event');
     TrainPanel.addLog('응암 — 첫차 탑승객과 눈이 마주쳤다', 'event');
@@ -18,7 +18,7 @@ Object.assign(STATION_EVENTS, {
     await printAscii([
       [`  ┌────────────────────────────┐`, ''],
       [`  │   첫차  AM 05:30           │`, 'hl'],
-      [`  │   응암 → 봉화산            │`, ''],
+      [`  │   응암 → 신내              │`, ''],
       [`  │   승객 수: 3명             │`, ''],
       [`  │   [메모지가 발 밑에 있다]  │`, 'hl'],
       [`  └────────────────────────────┘`, ''],
@@ -29,7 +29,7 @@ Object.assign(STATION_EVENTS, {
       ['텅 빈 6호선 객차. 형광등이 차갑게 빛난다.', 'narrator', 450],
       [`${gn()}의 발 밑에 접힌 메모지 하나가 있다.`, 'narrator', 700],
       ['', 'blank', 900],
-      ['"이것을 읽는 사람에게 — 봉화산에서 내리지 마세요."', 'dialog', 1000],
+      ['"이것을 읽는 사람에게 — 신내에서 내리지 마세요."', 'dialog', 1000],
       ['', 'blank', 1200],
       ['필체는 급하고 떨린다.', 'narrator', 1300],
       ['', 'blank', 1500],
@@ -43,7 +43,7 @@ Object.assign(STATION_EVENTS, {
         TrainPanel.addLog('메모지 획득', 'event');
         G.score += 2; G.missionCount++; updateStats();
         await seq([
-          ['"봉화산에서 내리지 마라..." 이게 무슨 뜻이지.', 'narrator', 200],
+          ['"신내에서 내리지 마라..." 이게 무슨 뜻이지.', 'narrator', 200],
           ['메모지를 접어 주머니에 넣었다.', 'result', 400],
           ['누가 남겨둔 것인지 — 알 수 없다.', 'narrator', 700],
         ]);
@@ -56,7 +56,7 @@ Object.assign(STATION_EVENTS, {
         await seq([
           ['신경 쓸 게 뭐 있나. 그냥 발로 밀었다.', 'result', 200],
           ['하지만 메모지의 내용이 뇌리에 남는다.', 'narrator', 500],
-          ['봉화산...', 'whisper', 800],
+          ['신내...', 'whisper', 800],
         ]);
         TrainPanel.playDepart();
         await sceneNextStation(stIdx + (G.dirStep || 1));
@@ -88,7 +88,7 @@ Object.assign(STATION_EVENTS, {
         await seq([
           ['메모지에 손을 올리자 손끝이 차갑게 저려온다.', 'whisper', 200],
           ['누군가의 강렬한 "거부감"이 종이에 박혀 있다.', 'narrator', 450],
-          ['봉화산... 그곳은 살아있는 자의 땅이 아닐지도 모른다.', 'death', 700],
+          ['신내... 그곳은 살아있는 자의 땅이 아닐지도 모른다.', 'death', 700],
           ['', 'blank', 900],
           ['정신력이 소폭 감소했지만, 진실의 냄새를 맡았다.', 'result', 1000],
         ]);

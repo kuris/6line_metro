@@ -29,7 +29,7 @@ async function sceneIntro() {
   G.startStation   = -1;
   G.direction      = 'up';
   G.dirStep        = 1;
-  G.endStation     = STATIONS.length - 1; // 봉화산
+  G.endStation     = STATIONS.length - 1; // 신내 (id 38)
   G.timeOfDay      = 'noon';
   G.playerJob      = '';
   G.playerItem     = '';
@@ -53,8 +53,8 @@ async function sceneIntro() {
   await printAscii([
     ['  ╔══════════════════════════════╗', ''],
     ['  ║   ◀  SEOUL METRO LINE 6  ▶   ║', 'hl'],
-    ['  ║  응암 ○────────────○ 봉화산  ║', ''],
-    ['  ║     38개 역  / 35.1 km       ║', ''],
+    ['  ║  응암 ○────────────○ 신내    ║', ''],
+    ['  ║     39개 역  / 36.4 km       ║', ''],
     ['  ║   [ 지금 승차하시겠습니까? ]  ║', 'hl'],
     ['  ╚══════════════════════════════╝', ''],
   ], 'ascii-station', { rowDelay: 70, label: '// SEOUL METRO LINE 6 SYSTEM', sound: 'modem' });
@@ -62,7 +62,7 @@ async function sceneIntro() {
   await seq([
     ['', 'blank', 100],
     ['오늘도 어김없이 6호선은 달린다.', 'narrator', 200],
-    ['응암에서 봉화산까지, 38개의 역을 지나는 이 노선에는', 'narrator', 450],
+    ['응암에서 신내까지, 39개의 역을 지나는 이 노선에는', 'narrator', 450],
     ['오늘도 수많은 이야기가 스쳐간다.', 'narrator', 700],
     ['', 'blank', 900],
     ['차체가 덜컹이며 낮은 진동이 발바닥을 울린다.', 'narrator', 1100],
@@ -373,7 +373,7 @@ async function sceneSelectStart() {
 
 /* ──────────────────────────────────────────
    방향 선택 화면 (상행 / 하행)
-   선택역이 응암(0)이면 상행만, 봉화산(37)이면 하행만 가능
+   선택역이 응암(0)이면 상행만, 신내(38)이면 하행만 가능
    ────────────────────────────────────────── */
 async function sceneSelectDirection(stIdx) {
   clearUI();
@@ -406,7 +406,7 @@ async function sceneSelectDirection(stIdx) {
 
   const dirOpts = [];
 
-  // 상행: 봉화산 방향 (index 증가) — 현재 역이 종점(37)이 아닐 때만
+  // 상행: 신내 방향 (index 증가) — 현재 역이 종점(38)이 아닐 때만
   if (stIdx < STATIONS.length - 1) {
     const endSt = STATIONS[STATIONS.length - 1];
     dirOpts.push([

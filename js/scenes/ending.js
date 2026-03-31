@@ -280,7 +280,7 @@ const ENDINGS = {
       ['주머니에 두 가지가 있다.', 'narrator'],
       ['응암의 메모지. 동묘의 카세트테이프.', 'highlight'],
       ['', 'blank'],
-      ['"봉화산에서 내리지 마세요."', 'death'],
+      ['"신내에서 내리지 마세요."', 'death'],
       ['', 'blank'],
       ['집에 돌아와 카세트 플레이어를 꺼냈다.', 'narrator'],
       ['테이프를 넣고 재생 버튼을 눌렀다.', 'narrator'],
@@ -292,7 +292,7 @@ const ENDINGS = {
       ['"6호선은 아직 끝나지 않았습니다."', 'highlight'],
       ['', 'blank'],
       ['테이프가 멈췄다.', 'narrator'],
-      ['창밖으로 봉화산이 보였다.', 'death'],
+      ['창밖으로 신내가 보였다.', 'death'],
       ['', 'blank'],
       ['...이 이야기는 아직 끝나지 않았다.', 'highlight'],
     ],
@@ -386,7 +386,7 @@ async function sceneEnding() {
     await seq([
       ['', 'blank', 200],
       ['메모지가 아직 주머니 안에 있다.', 'result', 300],
-      ['"봉화산에서 내리지 마세요." — 이게 다 무슨 뜻이었을까.', 'narrator', 600],
+      ['"신내에서 내리지 마세요." — 이게 다 무슨 뜻이었을까.', 'narrator', 600],
     ]);
   }
 
@@ -394,7 +394,7 @@ async function sceneEnding() {
     ['', 'blank', 300],
     ['──────────────────────────────', 'divider', 0],
     ['오늘도 6호선은 달렸다.', 'narrator', 200],
-    ['38개의 역, 35.1킬로미터.', 'narrator', 400],
+    ['39개의 역, 36.4킬로미터.', 'narrator', 400],
     ['그리고 그 안의 수많은 이야기들.', 'narrator', 600],
     ['당신도 그 이야기 중 하나였습니다.', 'highlight', 900],
     ['', 'blank', 1100],
@@ -437,7 +437,7 @@ async function sceneEnding() {
   setTimeout(() => {
     if (typeof exportScreenshot === 'function') {
       let catchphrase = '이런 엔딩이 있었어?';
-      if (endingId === 'secret') catchphrase = '봉화산 비밀 밝혀냈다';
+      if (endingId === 'secret') catchphrase = '신내 비밀 밝혀냈다';
       else if (endingId === 'ghost') catchphrase = '유령처럼 지나간 하루';
       else if (endingId === 'dawn_hero') catchphrase = '새벽 첫차의 수호자';
       exportScreenshot(catchphrase);
