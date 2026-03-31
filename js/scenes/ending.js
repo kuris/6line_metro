@@ -313,7 +313,7 @@ async function sceneEnding() {
 
   const endingId = determineEnding();
   const ending   = ENDINGS[endingId];
-  const sc       = G.score;
+  let sc         = G.score;
   const tod      = G.timeOfDay || 'noon';
   const todData  = TIME_OF_DAY[tod] || TIME_OF_DAY.noon;
 
