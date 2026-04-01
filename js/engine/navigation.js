@@ -260,9 +260,50 @@ async function exploreStation(st, stIdx, searches) {
     ]);
   }
 
-  // 3. 미스터리 조각 획득 판정 (탐색을 깊이 할수록 발견 확률 증가)
+  // 3. 힌트 아이템 보유 여부 확인 (한자 퀴즈 보상)
+  const hintItemName = `💡 힌트: ${st.name}`;
+  const hasHint = hasItem(hintItemName);
+  const alreadyFoundHere = G.seenEvents && G.seenEvents.includes(`mystery_${st.id}`);
+
+  if (hasHint && !alreadyFoundHere) {
+    choices([
+      [`✨ [힌트 사용] '${st.name}'의 비밀을 즉시 간파한다`, async () => {
+        removeItem(hintItemName);
+        G.seenEvents.push(`mystery_${st.id}`);
+        if (!G.mysteries) G.mysteries = [];
+        G.mysteries.push(`clue_${st.id}`);
+        G.sanity = Math.min(100, G.sanity + 20); // 힌트 사용 시 추가 보너스
+        updateStats();
+
+        TrainPanel.addLog(`[힌트 사용] ${st.name}의 미스터리 해독 완료`, 'life');
+        await seq([
+          ['', 'blank', 500],
+          [`미리 확보해둔 '${st.name}'의 지명 유래를 떠올린다.`, 'highlight', 1200],
+          ['혼란스러운 어둠 사이로 보이지 않던 진실의 실타래가 선명하게 보이기 시작한다.', 'life', 1800],
+          ['[🔍 미스터리 단서를 안전하게 확보했습니다!]', 'life', 3000],
+          ['魂(혼) +20 — 지식이 공포를 완전히 압도했습니다.', 'new', 3800],
+          ['', 'blank', 4500],
+        ]);
+        choices([['[ 안전한 곳(승강장)으로 돌아가기 ]', () => sceneStationHub(stIdx)]]);
+      }],
+      [`🔎 그냥 직접 탐색한다 (아이템 아끼기)`, async () => {
+        await _continueExploration(st, stIdx, searches);
+      }]
+    ]);
+    return;
+  }
+
+  // 힌트가 없거나 이미 찾은 경우 일반 탐색 진행
+  await _continueExploration(st, stIdx, searches);
+}
+
+/**
+ * 실제 탐색 진행 서브 함수
+ */
+async function _continueExploration(st, stIdx, searches) {
+  // 4. 미스터리 조각 획득 판정 (탐색을 깊이 할수록 발견 확률 증가)
   const mysteryFoundChance = 0.3 + (searches * 0.15); // 기본 30%, 탐색할수록 오름
-  const alreadyFoundHere = G.seenEvents.includes(`mystery_${st.id}`);
+  const alreadyFoundHere = G.seenEvents && G.seenEvents.includes(`mystery_${st.id}`);
   
   if (!alreadyFoundHere && Math.random() < mysteryFoundChance) {
     G.seenEvents.push(`mystery_${st.id}`);

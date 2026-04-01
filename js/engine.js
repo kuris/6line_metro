@@ -57,7 +57,9 @@ const G = {
   score:         0,
   missionCount:  0,
   mysteries:     [],      // 수집한 미스터리 조각(단서) ID 배열
+  quizSolved:    [],      // 정답을 맞춘 역 이름/ID 배열 (중복 퀴즈 방지)
   inventory:     [],      // 아이템 목록
+  seenEvents:    [],      // 이미 본 이벤트 ID 배열
   flags:         {},      // 스토리 플래그
   currentStation: -1,     // 현재 역 인덱스
   startStation:  -1,      // 선택한 출발역 인덱스

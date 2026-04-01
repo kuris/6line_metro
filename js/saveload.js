@@ -7,7 +7,7 @@
 'use strict';
 
 const GAME_URL    = 'https://bbkjhdeq.gensparkspace.com/';
-const SAVE_VER    = '3';   // 포맷 버전 (해독률 필드 추가)
+const SAVE_VER    = '4';   // 포맷 버전 (미스터리 및 퀴즈 상태 추가)
 
 /* ──────────────────────────────────────────
    인코딩 / 디코딩
@@ -38,6 +38,9 @@ function saveEncode() {
     ha:  G.hanjaAttempts || 0,
     hs:  G.hanjaSuccess || 0,
     hf:  G.hanjaFail || 0,
+    qs:  G.quizSolved || [],
+    ms:  G.mysteries || [],
+    se:  G.seenEvents || [],
   };
 
   // 체크섬 (간단한 위변조 감지)
@@ -98,6 +101,9 @@ function saveDecode(b64) {
       hanjaAttempts:   payload.ha  ?? 0,
       hanjaSuccess:    payload.hs  ?? 0,
       hanjaFail:       payload.hf  ?? 0,
+      quizSolved:      payload.qs  || [],
+      mysteries:       payload.ms  || [],
+      seenEvents:      payload.se  || [],
       inventory,
       flags,
     };
@@ -376,6 +382,9 @@ async function loadSaveData(data) {
   G.hanjaAttempts  = data.hanjaAttempts || 0;
   G.hanjaSuccess   = data.hanjaSuccess || 0;
   G.hanjaFail      = data.hanjaFail || 0;
+  G.quizSolved     = data.quizSolved || [];
+  G.mysteries      = data.mysteries || [];
+  G.seenEvents     = data.seenEvents || [];
   G.inventory      = data.inventory;
   G.flags          = data.flags;
 

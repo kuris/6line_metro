@@ -559,6 +559,10 @@ const stationListKeys = Object.keys(stationOrigin);
 async function maybeRunHanjaQuiz(st) {
   const freq = G.hanjaQuizFreq ?? 1.0;
   if (freq <= 0) return false;
+  
+  // 이미 정답을 맞춘 역은 퀴즈를 건너뜀 (중복 방지)
+  if (G.quizSolved && G.quizSolved.includes(st.name)) return false;
+
   if (Math.random() > freq) return false;
 
   const data = stationOrigin[st.name];
@@ -593,11 +597,17 @@ async function maybeRunHanjaQuiz(st) {
         if (opt.correct) {
           G.hanjaAttempts = (G.hanjaAttempts || 0) + 1;
           G.hanjaSuccess = (G.hanjaSuccess || 0) + 1;
+          
+          // 정답 기록 및 힌트 아이템 지급
+          if (!G.quizSolved) G.quizSolved = [];
+          if (!G.quizSolved.includes(st.name)) G.quizSolved.push(st.name);
+          addItem(`💡 힌트: ${st.name}`);
+
           G.sanity = Math.min(100, G.sanity + data.sanityBonus);
           G.score += 5;
           updateStats();
           if (window.sfx && window.sfx.item) window.sfx.item();
-          TrainPanel.addLog('[해독 성공] 지명의 숭고한 가호를 취합니다', 'life');
+          TrainPanel.addLog(`[해독 성공] '💡 힌트: ${st.name}' 획득`, 'life');
           
           let correctSeq = [
             [`맞아, ${data.meaning}.`, 'highlight', 1200]
