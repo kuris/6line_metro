@@ -336,9 +336,16 @@ function updateStats() {
   }
   
   // 옵션 패널 (단서, 이동 등)
-  if (G.mysteries && G.mysteries.length > 0) {
-    if (ST_MYSTERY_WRAP) ST_MYSTERY_WRAP.style.display = 'inline-block';
-    if (ST_MYSTERY) ST_MYSTERY.textContent = `${G.mysteries.length}개`;
+  if (G.currentStation >= 0) {
+    if (ST_MYSTERY_WRAP) {
+      ST_MYSTERY_WRAP.style.display = 'inline-block';
+      ST_MYSTERY_WRAP.style.cursor = 'pointer';
+      ST_MYSTERY_WRAP.onclick = () => showMysteryArchive();
+    }
+    if (ST_MYSTERY) {
+      const mysteryCount = G.mysteries ? G.mysteries.length : 0;
+      ST_MYSTERY.textContent = `${mysteryCount}개`;
+    }
   } else {
     if (ST_MYSTERY_WRAP) ST_MYSTERY_WRAP.style.display = 'none';
   }
@@ -363,6 +370,80 @@ function updateStats() {
   updateAvatar();
   
   if (typeof autoSave === 'function') autoSave();
+}
+
+/**
+ * 수집한 미스터리 단서들을 모아 보여주는 아카이브 모달
+ */
+function showMysteryArchive() {
+  if (window.sfx && window.sfx.ui) sfx.ui();
+  const overlay = document.createElement('div');
+  overlay.id = 'save-modal-overlay';
+  overlay.style.zIndex = '2000';
+  
+  let listHtml = '';
+  if (!G.mysteries || G.mysteries.length === 0) {
+    listHtml = '<div style="color:#4a6070;text-align:center;padding:20px;">아직 확보된 단서가 없습니다.</div>';
+  } else {
+    G.mysteries.forEach(id => {
+      const key = id.replace('clue_', '');
+      const text = window.MYSTERY_DATA ? (window.MYSTERY_DATA[key] || '해독할 수 없는 파편입니다.') : '데이터 로드 실패';
+      listHtml += `
+        <div class="mystery-item" style="border-left:2px solid #80e0a8;padding:8px 12px;margin-bottom:10px;background:rgba(128,224,168,0.05);border-radius:0 4px 4px 0">
+          <div style="font-size:10px;color:#80e0a8;margin-bottom:3px;text-transform:uppercase;letter-spacing:1px">🔍 STATION.${key}</div>
+          <div style="font-size:13px;line-height:1.5;color:#c8e8f8;word-break:keep-all">${text}</div>
+        </div>
+      `;
+    });
+  }
+
+  const mysteryMax = window.MYSTERY_DATA ? Object.keys(window.MYSTERY_DATA).length : 37;
+  const mysteryCount = G.mysteries ? G.mysteries.length : 0;
+  const mysteryRate = Math.floor((mysteryCount / mysteryMax) * 100);
+
+  overlay.innerHTML = `
+    <div id="save-modal" style="max-width:400px;width:95%;border-top:2px solid #80e0a8">
+      <div id="save-modal-header">
+        <span>🔍 미스터리 아카이브 & 생존 기록</span>
+        <button id="archive-close">✕</button>
+      </div>
+
+      <!-- 생준 요약 섹션 -->
+      <div style="background:#0a1015;padding:15px;border-bottom:1px solid #0e2030;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
+          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">현재 누적 業(업)</div>
+          <div style="font-size:18px;color:#80e0a8;font-weight:700">${G.score} <span style="font-size:11px;font-weight:400">Pts</span></div>
+        </div>
+        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
+          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">미스터리 해독률</div>
+          <div style="font-size:18px;color:#c8e8f8;font-weight:700">${mysteryCount} / ${mysteryMax} <span style="font-size:11px;font-weight:400">(${mysteryRate}%)</span></div>
+        </div>
+        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
+          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">지명 유래 해독</div>
+          <div style="font-size:16px;color:#80e0a8">${G.hanjaSuccess} / ${G.hanjaAttempts}</div>
+        </div>
+        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
+          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">현재 위치</div>
+          <div style="font-size:16px;color:#c8e8f8">${G.currentStation >= 0 ? STATIONS[G.currentStation].name : '인트로'}</div>
+        </div>
+      </div>
+
+      <div style="max-height:300px;overflow-y:auto;padding:15px 10px;background:#070b0e" class="custom-scroll">
+        <div style="font-size:11px;color:#4a6070;margin-bottom:12px;text-align:center">── 확보된 미스터리 단서 목록 ──</div>
+        ${listHtml}
+      </div>
+      <div style="padding:10px;text-align:center;border-top:1px solid #0e2030;background:#0a1015">
+        <button class="save-load-btn" id="archive-close-btn">기록창 닫기</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  
+  const close = () => { overlay.remove(); if (window.sfx && window.sfx.ui) sfx.ui(); };
+  document.getElementById('archive-close').onclick = close;
+  const cbtn = document.getElementById('archive-close-btn');
+  if (cbtn) cbtn.onclick = close;
+  overlay.onclick = (e) => { if (e.target === overlay) close(); };
 }
 
 async function modifyStat(type, amount, skipCheck = false) {

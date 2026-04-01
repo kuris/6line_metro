@@ -95,6 +95,10 @@ class HorrorFXEngine {
   scare() {
     this.scareMassive();
   }
+
+  // 사용자의 요청으로 제거된 기능을 위한 호환성 스텁
+  startBloodDrip() {}
+  stopBloodDrip() {}
 }
 
 window.HorrorFX = new HorrorFXEngine();
