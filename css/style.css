@@ -1910,3 +1910,23 @@ html.theme-light .chronicle-modal-inner .survival-log {
   pointer-events: none; z-index: 10005;
   opacity: 0;
 }
+
+/* ────────────────────────────────
+   역별 동적 대기 효과 (Atmospheres)
+   ──────────────────────────────── */
+.ep-header.atm-blackout { border-left: 4px solid #8040ff; animation: flicker 3s infinite; }
+.ep-header.atm-panic { border-left: 4px solid var(--red); animation: panicPulse 2s infinite; }
+.ep-header.atm-toxic { border-left: 4px solid #c0ff40; box-shadow: inset 0 0 15px rgba(192, 255, 64, 0.1); }
+.ep-header.atm-silence { border-left: 4px solid var(--gold); opacity: 0.85; filter: grayscale(0.3); }
+.ep-header.atm-sanctuary { border-left: 4px solid var(--blue); box-shadow: 0 0 10px rgba(64, 128, 255, 0.2); }
+
+@keyframes flicker {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+}
+
+@keyframes panicPulse {
+  0% { box-shadow: 0 0 0px rgba(255, 0, 0, 0); }
+  50% { box-shadow: 0 0 15px rgba(255, 0, 0, 0.3); }
+  100% { box-shadow: 0 0 0px rgba(255, 0, 0, 0); }
+}

@@ -191,50 +191,138 @@ async function sceneNextStation(nextIdx) {
 /**
  * 역(Station) 허브 화면 - 탐험, 휴식, 이동 선택
  */
+// [NEW] 역 분위기(Atmosphere) 정의
+const ATMOSPHERES = {
+  normal: { name: '평온함', desc: '특이사항 없는 고요한 승강장입니다.', color: 'var(--green)', chance: 0.4 },
+  blackout: { name: '정전', desc: '비상등조차 꺼진 암흑 속입니다. 정신적 압박이 심합니다.', color: '#8040ff', chance: 0.15, sanityMod: -5 },
+  panic: { name: '공황', desc: '정체불명의 소음과 비명이 들려옵니다. 누군가 당신을 쫓는듯 합니다.', color: 'var(--red)', chance: 0.12, healthMod: -5 },
+  toxic: { name: '오염', desc: '코를 찌르는 악취와 함께 붉은 포자가 공기 중에 떠다닙니다.', color: '#c0ff40', chance: 0.12, infectionMod: 5 },
+  silence: { name: '기묘한 침묵', desc: '소리가 모두 사라진 듯한 정적. 비밀이 숨겨져 있을 것 같습니다.', color: 'var(--gold)', chance: 0.1, mysteryMod: 0.3 },
+  sanctuary: { name: '안식처', desc: '보기 드물게 따뜻하고 안전한 기운이 감도는 구역입니다.', color: 'var(--blue)', chance: 0.05, healMod: 10 }
+};
+
 window.sceneStationHub = async function(stIdx) {
   clearUI();
   
   const st = STATIONS[stIdx];
   const dirLabel = (G.dirStep || 1) >= 0 ? '상행 ▲' : '하행 ▼';
   
-  // 탐색 횟수 추적 (손상 방지 가드 포함)
+  // 1. 역 상태(Atmosphere) 결정 및 추적
+  if (!G.flags.atmospheres) G.flags.atmospheres = {};
+  if (!G.flags.atmospheres[stIdx]) {
+    const roll = Math.random();
+    let cum = 0;
+    let selected = 'normal';
+    for (const [key, atm] of Object.entries(ATMOSPHERES)) {
+      cum += atm.chance;
+      if (roll < cum) {
+        selected = key;
+        break;
+      }
+    }
+    G.flags.atmospheres[stIdx] = selected;
+  }
+  const currentAtm = ATMOSPHERES[G.flags.atmospheres[stIdx]];
+
+  // 2. 탐색 횟수 추적
   if (!G.flags.searchedData || typeof G.flags.searchedData !== 'object') {
     G.flags.searchedData = {};
   }
   const searches = G.flags.searchedData[stIdx] || 0;
 
+  // 3. UI 출력
   const epDiv = document.createElement('div');
-  epDiv.className = 'line ep-header show';
+  epDiv.className = `line ep-header show atm-${G.flags.atmospheres[stIdx]}`;
   epDiv.innerHTML = `
-    <div class="ep-num">STATION ${st.code} [현재 머무는 중]</div>
+    <div class="ep-num">STATION ${st.code} [역 상태: <span style="color:${currentAtm.color}">${currentAtm.name}</span>]</div>
     <div class="ep-title">${st.name} <span style="font-size:11px;color:#4a6070;font-weight:400">${st.nameEn}</span></div>
-    <div class="ep-sub">무엇을 할지 결정해야 합니다.</div>`;
+    <div class="ep-sub">${currentAtm.desc}</div>`;
   OUT.appendChild(epDiv);
 
-  await print('스산한 승강장의 공기가 당신을 감돈다.', 'narrator', 300);
+  await print(`[${st.name}역에 머무는 중...]`, 'narrator', 300);
   
-  const exploreRiskText = searches > 0 ? ` (탐색 횟수: ${searches} - 위험 증가)` : '';
+  // 4. 동적 선택지 구성
+  const opts = [];
+  const exploreRiskText = searches > 0 ? ` (탐색 ${searches}회 - 위험 증가)` : '';
+  
+  // 기본: 탐색
+  opts.push([`🕵️ 역 내부 탐색${exploreRiskText}`, async () => {
+    G.flags.searchedData[stIdx] = searches + 1;
+    await exploreStation(st, stIdx, searches, currentAtm);
+  }]);
 
-  choices([
-    [`🕵️ 역 내부 탐색${exploreRiskText}`, async () => {
-      G.flags.searchedData[stIdx] = searches + 1;
-      await exploreStation(st, stIdx, searches);
-    }],
-    [`💊 승강장 벤치에서 휴식`, async () => {
-      await restAtStation(stIdx);
-    }],
-    [`🚇 열차 탑승 (다음 역으로 ${dirLabel})`, async () => {
-      TrainPanel.playDepart();
-      sceneNextStation(stIdx + (G.dirStep || 1));
-    }]
-  ]);
+  // 분위기별 특수 행동 (New!)
+  if (G.flags.atmospheres[stIdx] === 'blackout') {
+    opts.push([`🔦 비상 발전기 가동 시도`, async () => {
+      clearUI();
+      if (Math.random() < 0.4) {
+        await print('발전기가 가랑거리는 소리를 내며 돌아갑니다. 빛이 돌아왔습니다!', 'life');
+        G.sanity += 15;
+        G.flags.atmospheres[stIdx] = 'normal';
+      } else {
+        await print('발전기가 불꽃을 튀기며 멈춰버렸습니다. 정전이 심화됩니다.', 'death');
+        G.sanity -= 10;
+      }
+      updateStats();
+      choices([['[ 돌아가기 ]', () => sceneStationHub(stIdx)]]);
+    }]);
+  } else if (G.flags.atmospheres[stIdx] === 'toxic') {
+    opts.push([`😷 환강 정화 장치 가동`, async () => {
+      clearUI();
+      await print('뿌연 연기 사이로 공기 정화기가 돌아갑니다. 독소가 조금 옅어집니다.', 'info');
+      G.infection = Math.max(0, G.infection - 8);
+      updateStats();
+      choices([['[ 돌아가기 ]', () => sceneStationHub(stIdx)]]);
+    }]);
+  } else if (G.flags.atmospheres[stIdx] === 'silence') {
+    opts.push([`👂 벽 너머의 소리에 귀 기울이기`, async () => {
+      clearUI();
+      await print('숨을 죽이고 차가운 타일 벽에 귀를 댑니다...', 'whisper', 800);
+      if (Math.random() < 0.5) {
+        await print('누군가 쓴 것 같은 낙서의 의미를 깨우칩니다. 단서를 발견했습니다!', 'life');
+        G.mysteries.push(`extra_${st.id}`);
+        addItem(`📜 기묘한 전언`);
+      } else {
+        await print('그저 메마른 바람 소리만 들려올 뿐입니다.', 'narrator');
+      }
+      choices([['[ 돌아가기 ]', () => sceneStationHub(stIdx)]]);
+    }]);
+  } else if (G.flags.atmospheres[stIdx] === 'sanctuary') {
+    opts.push([`🕯️ 평온한 촛불 켜기 (대량 회복)`, async () => {
+      clearUI();
+      await print('작은 촛불 하나가 어두운 승강장을 밝힙니다. 영혼이 치유됩니다.', 'life');
+      G.health = Math.min(100, G.health + 20);
+      G.sanity = Math.min(100, G.sanity + 20);
+      updateStats();
+      choices([['[ 돌아가기 ]', () => sceneStationHub(stIdx)]]);
+    }]);
+  }
+
+  // 기본: 휴식
+  opts.push([`💊 승강장 벤치에서 휴식`, async () => {
+    await restAtStation(stIdx, currentAtm);
+  }]);
+
+  // 기본: 출발
+  opts.push([`🚇 열차 탑승 (다음 역으로 ${dirLabel})`, async () => {
+    TrainPanel.playDepart();
+    sceneNextStation(stIdx + (G.dirStep || 1));
+  }]);
+
+  choices(opts);
 };
 
 /**
  * 역 내부 탐색 로직 - 리스크 앤 리턴 & 미스터리 수집
  */
-async function exploreStation(st, stIdx, searches) {
+async function exploreStation(st, stIdx, searches, currentAtm) {
   clearUI();
+  
+  if (currentAtm && currentAtm.sanityMod) {
+    G.sanity += currentAtm.sanityMod;
+    TrainPanel.addLog(`[${currentAtm.name}] 정신적 압박`, 'warn');
+  }
+  
   await print(`${st.name}역 구석구석을 살펴보기 시작한다...`, 'narrator', 500);
 
   // 1. 역 고유 이벤트 최우선 실행 (단, 탐색 횟수가 적을 때만 안전하게)
@@ -355,16 +443,23 @@ async function _continueExploration(st, stIdx, searches) {
 /**
  * 벤치 휴식 로직
  */
-async function restAtStation(stIdx) {
+async function restAtStation(stIdx, currentAtm) {
   clearUI();
+  
+  const st = STATIONS[stIdx];
   TrainPanel.addLog('짧은 휴식', 'info');
   
-  const healAmt = 10;
+  let healAmt = 10;
+  if (currentAtm && currentAtm.healMod) healAmt += currentAtm.healMod;
+
   G.sanity += healAmt;
   if(G.sanity > 100) G.sanity = 100;
   
   // 휴식 부작용 
-  const infectedHeal = Math.random() < 0.3;
+  let infectionChance = 0.3;
+  if (currentAtm && currentAtm.infectionMod) infectionChance += 0.2; // 오염된 곳에선 감염 확률 상승
+
+  const infectedHeal = Math.random() < infectionChance;
   if(infectedHeal) {
     G.infection += 5;
   }
