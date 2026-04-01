@@ -134,51 +134,6 @@ MAP_BTN.addEventListener('click', () => {
 });
 
 // ────────────────────────────────
-//  미니맵 빌드
-// ────────────────────────────────
-function buildMinimap() {
-  const el = document.getElementById('minimap');
-  if (!el) return;
-  el.innerHTML = '';
-
-  const wrap = document.createElement('div');
-  wrap.style.cssText = `
-    display:flex; flex-wrap:wrap; gap:3px 0;
-    padding:6px 12px 4px;
-    font-family:'Courier New',monospace; font-size:11px;
-  `;
-
-  STATIONS.forEach((st, i) => {
-    const done    = i < G.currentStation;
-    const current = i === G.currentStation;
-    const hasEv   = st.hasEvent;
-
-    const item = document.createElement('div');
-    item.style.cssText = 'display:flex;align-items:center;gap:3px;';
-
-    const dot = document.createElement('span');
-    dot.style.cssText = `
-      display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0;
-      background:${current ? '#c05020' : done ? '#703010' : hasEv ? '#8a6010' : 'transparent'};
-      border:1px solid ${current ? '#c05020' : done ? '#703010' : hasEv ? '#8a6010' : '#1e3040'};
-      ${current ? 'box-shadow:0 0 5px #c05020;' : ''}
-    `;
-
-    const label = document.createElement('span');
-    label.style.cssText = `color:${current ? '#c05020' : done ? '#703010' : hasEv ? '#8a6010' : '#1e3040'};`;
-    label.textContent = st.name;
-
-    const sep = document.createElement('span');
-    sep.style.cssText = 'color:#152028;margin:0 2px;';
-    sep.textContent = i < STATIONS.length - 1 ? '—' : '';
-
-    item.append(dot, label, sep);
-    wrap.appendChild(item);
-  });
-  el.appendChild(wrap);
-}
-
-// ────────────────────────────────
 //  세이브 버튼
 // ────────────────────────────────
 const SAVE_BTN = document.getElementById('save-btn');
@@ -203,7 +158,6 @@ if (SAVE_BTN) {
 // ────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
   TrainPanel.init();
-  buildMinimap();
   MINIMAP_WRAP.style.display = 'none';
 
   // 모바일이면 game 탭이 기본 활성

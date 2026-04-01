@@ -1807,6 +1807,72 @@ input:focus-visible {
   animation: statFloatUp 1.2s ease-out forwards;
 }
 
+/* ════════════════════════════════
+   PC 전용 고정 연대기 패널 (Aside)
+   ════════════════════════════════ */
+#chronicle-aside { display: none; }
+
+@media (min-width: 761px) {
+  #game {
+    display: flex; gap: 16px;
+    align-items: flex-start;
+  }
+  #event-card { flex: 1; min-width: 400px; }
+  
+  #chronicle-aside {
+    display: flex; flex-direction: column;
+    width: 340px; height: calc(100vh - 120px);
+    background: rgba(10, 20, 30, 0.4);
+    border: 1px solid #1a3040; border-radius: 4px;
+    position: sticky; top: 10px;
+    padding: 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+    overflow: hidden; font-family: 'Courier New', monospace;
+  }
+  
+  html.theme-light #chronicle-aside {
+    background: rgba(240, 235, 215, 0.6);
+    border-color: #d0c5a8;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+  }
+
+  #ca-header {
+    background: #0d1a24; color: #80e0a8;
+    padding: 8px 12px; font-size: 11px;
+    border-bottom: 1px solid #1a3040;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  html.theme-light #ca-header { background: #e5dfc8; color: #703010; border-color: #d0c5a8; }
+
+  #ca-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1px; background: #1a3040; border-bottom: 1px solid #1a3040;
+  }
+  .ca-stat-item { background: #070b0e; padding: 6px 10px; text-align: center; }
+  html.theme-light .ca-stat-item { background: #fdfaf2; }
+  .ca-stat-item .val  { font-weight: 700; font-size: 15px; color: #80e0a8; }
+  .ca-stat-item .lbl  { font-size: 9px; color: #5a8090; margin-bottom: 2px; }
+  html.theme-light .ca-stat-item .val { color: #a04020; }
+
+  .ca-label {
+    padding: 4px 12px; font-size: 10px;
+    color: #5a8090; background: rgba(0,0,0,0.2);
+    border-bottom: 1px dashed #1a3040; margin-top: 10px;
+  }
+  html.theme-light .ca-label { background: rgba(0,0,0,0.03); color: #8a7060; border-color: #d8cfb8; }
+
+  #ca-mysteries-list, #ca-logs-list {
+    flex: 1; overflow-y: auto; padding: 10px 12px;
+  }
+  #ca-mysteries-list { max-height: 200px; border-bottom: 1px solid #1a3040; }
+  
+  .ca-m-item { font-size: 12px; margin-bottom: 8px; border-left: 2px solid #305040; padding-left: 8px; color: #c8e8f8; }
+  html.theme-light .ca-m-item { border-color: #d0c5a8; color: #403020; }
+
+  #ca-logs-list { font-size: 11px; color: #6a8090; line-height: 1.5; }
+  html.theme-light #ca-logs-list { color: #6a5a4a; }
+  #ca-logs-list .line { margin-bottom: 4px; border: 0; padding: 0; opacity: 0.8; }
+}
+
 @keyframes statFloatUp {
   0%   { transform: translateY(0); opacity: 0; }
   20%  { opacity: 1; }
@@ -1814,10 +1880,9 @@ input:focus-visible {
   100% { transform: translateY(-40px); opacity: 0; }
 }
 
-/* 6. 생존 연대기 커스텀 스크롤 */
-.chronicle-scroll::-webkit-scrollbar { width: 4px; }
-.chronicle-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-.chronicle-scroll::-webkit-scrollbar-thumb { background: #304050; border-radius: 2px; }
+#ca-mysteries-list::-webkit-scrollbar, #ca-logs-list::-webkit-scrollbar { width: 4px; }
+#ca-mysteries-list::-webkit-scrollbar-track, #ca-logs-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+#ca-mysteries-list::-webkit-scrollbar-thumb, #ca-logs-list::-webkit-scrollbar-thumb { background: #1a3040; border-radius: 2px; }
 
 #horror-flash-layer {
   position: fixed; inset: 0;
