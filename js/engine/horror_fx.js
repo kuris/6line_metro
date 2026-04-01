@@ -58,10 +58,6 @@ class HorrorFXEngine {
     this.flashLayer.classList.add('flash-red');
     if (window.AudioHorror) window.AudioHorror.playMoan();
 
-    const dropCount = 8 + Math.floor(Math.random() * 12);
-    for(let i=0; i<dropCount; i++) {
-        setTimeout(() => this.spawnBloodDrop(), i * 40);
-    }
     const splatCount = 1 + Math.floor(Math.random() * 3);
     for(let i=0; i<splatCount; i++) {
         setTimeout(() => this.spawnSplatter(), i * 150);
@@ -94,6 +90,10 @@ class HorrorFXEngine {
   // 별칭 (Compatibility)
   flashRed(duration) {
     this.flashBlood(duration);
+  }
+
+  scare() {
+    this.scareMassive();
   }
 }
 

@@ -32,6 +32,11 @@ const FS_BTN    = document.getElementById('fs-btn');
 const SOUND_BTN = document.getElementById('sound-btn');
 const SHARE_BTN = document.getElementById('share-btn');
 const FAST_BTN  = document.getElementById('fast-btn');
+const ST_HP_FILL = document.getElementById('st-hp-fill');
+const ST_SP_FILL = document.getElementById('st-sp-fill');
+const ST_INF_FILL = document.getElementById('st-inf-fill');
+const ST_MYSTERY_WRAP = document.getElementById('st-mystery-wrap');
+const ST_MYSTERY = document.getElementById('st-mystery');
 
 if (SHARE_BTN) {
   SHARE_BTN.onclick = () => {
@@ -295,15 +300,11 @@ function updateStats() {
   if (ST_MOV) ST_MOV.textContent = G.moveCount;
 
   // 프로그레스 바 너비 업데이트
-  const hpFill = document.getElementById('st-hp-fill');
-  if (hpFill) hpFill.style.width = Math.max(0, Math.min(100, G.health)) + '%';
-  const spFill = document.getElementById('st-sp-fill');
-  if (spFill) spFill.style.width = Math.max(0, Math.min(100, G.sanity)) + '%';
-  const ST_INF_FILL = document.getElementById('st-inf-fill');
-  const ST_MYSTERY_WRAP = document.getElementById('st-mystery-wrap');
-  const ST_MYSTERY = document.getElementById('st-mystery');
+  if (ST_HP_FILL) ST_HP_FILL.style.width = Math.max(0, Math.min(100, G.health)) + '%';
+  if (ST_SP_FILL) ST_SP_FILL.style.width = Math.max(0, Math.min(100, G.sanity)) + '%';
+  if (ST_INF_FILL) ST_INF_FILL.style.width = Math.max(0, Math.min(100, G.infection)) + '%';
   
-  if (G.health === undefined) G.health = 100;Math.max(0, Math.min(100, G.infection)) + '%';
+  if (G.health === undefined) G.health = 100;
 
   // ────────────────────────────────
   // 전면적 호러 연출 연동 (정신력 魂 기반)
