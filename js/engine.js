@@ -294,31 +294,29 @@ function updateStats() {
   if (ST_SCR) ST_SCR.textContent = G.score;
   if (ST_MOV) ST_MOV.textContent = G.moveCount;
 
+  // 프로그레스 바 너비 업데이트
+  const hpFill = document.getElementById('st-hp-fill');
+  if (hpFill) hpFill.style.width = Math.max(0, Math.min(100, G.health)) + '%';
+  const spFill = document.getElementById('st-sp-fill');
+  if (spFill) spFill.style.width = Math.max(0, Math.min(100, G.sanity)) + '%';
+  const infFill = document.getElementById('st-inf-fill');
+  if (infFill) infFill.style.width = Math.max(0, Math.min(100, G.infection)) + '%';
+
   // ────────────────────────────────
   // 전면적 호러 연출 연동 (정신력 魂 기반)
   // ────────────────────────────────
   if (window.HorrorFX) {
-    // 정신력에 비례한 강도 계산 (100 -> 0.0, 0 -> 1.0)
     const madness = (100 - G.sanity) / 100;
     window.HorrorFX.setIntensity(madness);
-
-    // 임계치 이하(정신력 25 미만): 모니터가 피를 본격적으로 흘리기 시작
-    if (G.sanity < 25) {
-      const dripSpeed = 800 - (25 - G.sanity) * 20; 
-      window.HorrorFX.startBloodDrip(Math.max(150, dripSpeed)); 
-    } else if (G.sanity < 40 && Math.random() < 0.05) {
-      // 정신력이 낮아지기 시작하면 가끔씩 한두 방울씩 흘림
-      window.HorrorFX.spawnBloodDrop();
-    } else if (G.sanity >= 40) {
+    
+    // 피가 내리는 이펙트 비활성화 (요청 사항 반영)
+    if (typeof window.HorrorFX.stopBloodDrip === 'function') {
       window.HorrorFX.stopBloodDrip();
     }
     
-    // 무작위 점멸 및 비명 (정신적 붕괴 체감)
-    if (G.sanity < 40 && Math.random() < 0.1) {
-      window.HorrorFX.flashBlood(400);
-    }
-    if (G.sanity < 30 && Math.random() < 0.1) {
-      window.HorrorFX.glitch(400);
+    // 이성이 낮을 때 가벼운 글리치만 남김
+    if (G.sanity < 30 && Math.random() < 0.08) {
+      window.HorrorFX.glitch(250);
     }
   }
 
@@ -774,6 +772,41 @@ const sfx = {
 //  텍스트 출력 엔진
 // ────────────────────────────────
 function clearUI() {
+  // 이전 텍스트들을 혈창(train-log)에 요약/백업하여 다시 볼 수 있게 처리 (요청 사항 반영)
+  if (OUT.innerHTML.trim() !== '') {
+    const trainLog = document.getElementById('train-log');
+    if (trainLog) {
+      const arch = document.createElement('div');
+      arch.innerHTML = OUT.innerHTML;
+      arch.style.borderTop = "1px dashed #1e3040";
+      arch.style.margin = "12px 0 4px";
+      arch.style.paddingTop = "8px";
+      arch.style.opacity = "0.6";
+      arch.style.fontSize = "12px";
+      
+      // 지나간 로그는 애니메이션 제거
+      arch.querySelectorAll('.line').forEach(el => {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        el.style.animation = 'none';
+        el.style.marginBottom = '2px';
+      });
+      arch.querySelectorAll('.ascii-wrap').forEach(el => {
+        el.style.fontSize = '9px';
+        el.style.lineHeight = '1';
+      });
+
+      trainLog.appendChild(arch);
+      trainLog.scrollTop = trainLog.scrollHeight;
+      
+      // 모바일 로그 뱃지 업데이트 (새로운 로그가 쌓였음을 알림)
+      const badgeLog = document.getElementById('badge-log');
+      if (badgeLog && window.getComputedStyle(document.getElementById('train-panel')).display === 'none') {
+        badgeLog.classList.add('show');
+      }
+    }
+  }
+
   OUT.innerHTML     = '';
   CHOICES.innerHTML = '';
   NAME_AREA.classList.remove('active');

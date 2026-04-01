@@ -101,37 +101,56 @@
   <!-- 오른쪽: 게임 텍스트 -->
   <div id="game" role="tabpanel" aria-labelledby="tab-game">
     <div id="stat-bar">
-      <div class="stat-item">骸(해): <span id="st-hp">100</span></div>
-      <div class="stat-item">魂(혼): <span id="st-sp">100</span></div>
-      <div class="stat-item">蝕(식): <span id="st-inf">0</span>%</div>
-      <div class="stat-item">業(업): <span id="st-score">0</span></div>
-      <div class="stat-item">緣(연): <span id="st-mission">0</span></div>
-      <div class="stat-item">🚇 이동: <span id="st-move">0</span>역</div>
-      <div class="stat-item" id="st-hanja-wrap" style="display:none">
-        👁️ 해독률: <span id="st-hanja">0/0</span>
+      <div class="stat-group-main">
+        <div class="stat-item stat-bar-hp">
+          <div class="stat-label">骸(해): <span id="st-hp">100</span></div>
+          <div class="stat-track"><div class="stat-fill" id="st-hp-fill" style="width:100%"></div></div>
+        </div>
+        <div class="stat-item stat-bar-sp">
+          <div class="stat-label">魂(혼): <span id="st-sp">100</span></div>
+          <div class="stat-track"><div class="stat-fill" id="st-sp-fill" style="width:100%"></div></div>
+        </div>
+        <div class="stat-item stat-bar-inf">
+          <div class="stat-label">蝕(식): <span id="st-inf">0</span>%</div>
+          <div class="stat-track"><div class="stat-fill" id="st-inf-fill" style="width:0%"></div></div>
+        </div>
       </div>
-      <div class="stat-item" id="st-tod-wrap">
-        🕐 <span id="st-tod">—</span>
-      </div>
-      <div class="stat-item" id="st-item-wrap" style="display:none">
-        🎒 아이템: <span id="st-item">없음</span>
-      </div>
-      <div class="stat-item" id="st-companion-wrap" style="display:none">
-        👥 동행: <span id="st-companion">없음</span>
+      
+      <div class="stat-group-sub">
+        <div class="stat-text-item">業(업): <span id="st-score">0</span></div>
+        <div class="stat-text-item">緣(연): <span id="st-mission">0</span></div>
+        <div class="stat-text-item">🚇 이동: <span id="st-move">0</span>역</div>
+        <div class="stat-text-item" id="st-hanja-wrap" style="display:none">
+          👁️ 해독률: <span id="st-hanja">0/0</span>
+        </div>
+        <div class="stat-text-item" id="st-tod-wrap">
+          🕐 <span id="st-tod">—</span>
+        </div>
+        <div class="stat-text-item" id="st-item-wrap" style="display:none">
+          🎒 아이템: <span id="st-item">없음</span>
+        </div>
+        <div class="stat-text-item" id="st-companion-wrap" style="display:none">
+          👥 동행: <span id="st-companion">없음</span>
+        </div>
       </div>
     </div>
-    <div id="output"></div>
-    <div id="choices"></div>
-    <div id="name-area">
-      <div id="name-row">
-        <input id="name-input" type="text" maxlength="10"
-               placeholder="승객의 이름을 입력하세요"
-               autocomplete="off" spellcheck="false"
-               inputmode="text" enterkeyhint="done">
-        <button id="name-confirm">탑승</button>
+    
+    <!-- 이벤트 카드 뷰 -->
+    <div id="event-card">
+      <div id="output"></div>
+      <div id="choices"></div>
+      <div id="name-area">
+        <div id="name-row">
+          <input id="name-input" type="text" maxlength="10"
+                 placeholder="승객의 이름을 입력하세요"
+                 autocomplete="off" spellcheck="false"
+                 inputmode="text" enterkeyhint="done">
+          <button id="name-confirm">탑승</button>
+        </div>
+        <div id="name-hint">※ 엔터 또는 탑승 버튼. 비우면 기본값(김도현) 사용.</div>
       </div>
-      <div id="name-hint">※ 엔터 또는 탑승 버튼. 비우면 기본값(김도현) 사용.</div>
     </div>
+
     <div id="progress-wrap">
       <div id="progress-label">STATION LOG</div>
       <div id="progress"></div>

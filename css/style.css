@@ -627,22 +627,23 @@ body {
 .line.ep-header .ep-sub   { color: var(--dim); font-size: 11px; }
 
 /* 선택지 버튼 */
-#choices { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+#choices { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
 .choice-btn {
-  background: transparent;
+  background: rgba(10,18,26,0.6);
   border: 1px solid var(--border);
   color: var(--green);
   font-family: 'Noto Serif KR', monospace;
-  font-size: 13.5px;
-  padding: 12px 16px;           /* 터치 영역 확보 */
-  min-height: var(--touch-min); /* 44px 최소 */
+  font-size: 14.5px;
+  padding: 16px 20px;
+  min-height: 56px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.15s;
-  border-radius: 2px;
+  transition: all 0.2s;
+  border-radius: 4px;
   position: relative;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  display: block;
 }
 .choice-btn::before {
   content: '';
@@ -650,13 +651,39 @@ body {
   background: rgba(90,170,122,0.06);
   transition: width 0.2s;
 }
-.choice-btn:hover, .choice-btn:focus-visible { border-color: #3a7a5a; color: var(--bright); outline: none; }
+.choice-btn:hover, .choice-btn:focus-visible { border-color: var(--green); color: var(--bright); background: rgba(40,80,60,0.4); outline: none; }
 .choice-btn:hover::before { width: 100%; }
-.choice-btn:active { background: rgba(90,170,122,0.12); transform: scale(0.99); }
+.choice-btn:active { transform: scale(0.99); }
 .choice-btn.danger { color: var(--red); border-color: #3a1818; }
-.choice-btn.danger:hover { border-color: var(--red); }
+.choice-btn.danger:hover { border-color: var(--red); background: rgba(80,30,30,0.4); }
 .choice-btn.reward { color: var(--gold); border-color: #3a3010; }
-.choice-btn.reward:hover { border-color: var(--gold); }
+.choice-btn.reward:hover { border-color: var(--gold); background: rgba(80,60,20,0.4); }
+
+/* 특성 뱃지(직업 전용 선택지 등) 스타일링은 동적으로 생성될 span 컨테이너를 위해 준비 */
+.choice-btn .perk-badge {
+  display: inline-block;
+  background: var(--gold);
+  color: #000;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+/* 이벤트 카드 컨테이너 */
+#event-card {
+  background: rgba(8, 14, 20, 0.4);
+  border: 1px solid #1a2a3a;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+}
 
 /* 이름 입력 */
 #name-area { display: none; margin-top: 16px; flex-direction: column; gap: 10px; }
@@ -675,6 +702,7 @@ body {
   border-radius: 2px;
   transition: border-color 0.2s;
   -webkit-appearance: none;
+  appearance: none;
 }
 #name-input:focus { border-color: var(--green); }
 #name-confirm {
@@ -706,14 +734,28 @@ body {
 .pdot-todo    { background: transparent; border: 1px solid #1e3040; }
 @keyframes pdotPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-/* 통계 바 */
+/* 통계 바 및 프로그레스 바 */
 #stat-bar {
-  display: none; gap: 14px; flex-wrap: wrap;
-  margin-bottom: 10px; font-size: 11px;
-  color: #2a4050; letter-spacing: 1px;
+  display: none; flex-direction: column; gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 12px;
 }
 #stat-bar.show { display: flex; }
-.stat-item span { color: var(--dim); }
+
+.stat-group-main { display: flex; gap: 12px; }
+.stat-item { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.stat-label { font-size: 11px; color: var(--text); font-weight: bold; }
+.stat-label span { color: var(--dim); font-weight: normal; }
+.stat-track { height: 6px; background: #060e14; border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+.stat-fill { height: 100%; transition: width 0.3s ease, background-color 0.3s ease; }
+#st-hp-fill { background: var(--red); }
+#st-sp-fill { background: #3a7a9a; }
+#st-inf-fill { background: #1a5a3a; }
+
+.stat-group-sub { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+.stat-text-item { font-size: 11px; color: var(--dim); }
+.stat-text-item span { color: var(--gold); font-weight: 500; }
 
 /* 아스키아트 */
 .ascii-wrap {
