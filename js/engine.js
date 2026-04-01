@@ -417,69 +417,13 @@ function updateStats() {
 
   updateAvatar();
   
-  // PC 전용 상시 패널 동기화 (Aside)
-  if (typeof syncChronicleAside === 'function') syncChronicleAside();
-
   if (typeof autoSave === 'function') autoSave();
 }
 
 /**
- * PC 상시 패널 업데이트
- */
-function syncChronicleAside() {
-  const aside = document.getElementById('chronicle-aside');
-  if (!aside || window.getComputedStyle(aside).display === 'none') return;
-
-  // 1. 상세 스탯
-  const statsBox = document.getElementById('ca-stats');
-  if (statsBox) {
-    statsBox.innerHTML = `
-      <div class="ca-stat-item"><div class="lbl">業(업)</div><div class="val">${G.score}</div></div>
-      <div class="ca-stat-item"><div class="lbl">骸(해)</div><div class="val">${Math.max(0, G.health)}</div></div>
-      <div class="ca-stat-item"><div class="lbl">魂(혼)</div><div class="val">${Math.max(0, G.sanity)}</div></div>
-      <div class="ca-stat-item"><div class="lbl">解(해독)</div><div class="val">${G.hanjaSuccess}</div></div>
-    `;
-  }
-
-  // 2. 미스터리 목록 요약
-  const mList = document.getElementById('ca-mysteries-list');
-  if (mList) {
-    if (!G.mysteries || G.mysteries.length === 0) {
-      mList.innerHTML = '<div style="color:#4a6070;font-size:11px;padding:4px">확보된 단서 없음</div>';
-    } else {
-      mList.innerHTML = G.mysteries.map(id => {
-        const key = id.replace('clue_', '');
-        return `<div class="ca-m-item"><b>🔍 ${key}</b> 확보됨</div>`;
-      }).join('');
-    }
-  }
-
-  // 3. 로그 복제 (Train Log)
-  const lList = document.getElementById('ca-logs-list');
-  const srcLog = document.getElementById('train-log');
-  if (lList && srcLog) {
-    lList.innerHTML = srcLog.innerHTML;
-    lList.scrollTop = lList.scrollHeight;
-  }
-}
-
-/**
- * 수집한 미스터리 단서들을 모아 보여주는 아카이브 모달
- */
-/**
  * 생존 연대기 (Chronicle): 스탯, 단서, 전체 로그 통합 창
  */
 function showSurvivalChronicle() {
-  // 만약 PC 상시 패널이 이미 보이고 있다면 모달을 띄우지 않고 해당 패널을 강조
-  const aside = document.getElementById('chronicle-aside');
-  if (aside && window.getComputedStyle(aside).display !== 'none') {
-    aside.style.borderColor = '#80e0a8';
-    aside.style.boxShadow = '0 0 15px rgba(128,224,168,0.3)';
-    setTimeout(() => { aside.style.borderColor = ''; aside.style.boxShadow = ''; }, 1000);
-    if (window.sfx && window.sfx.ui) sfx.ui();
-    return;
-  }
-
   if (window.sfx && window.sfx.ui) sfx.ui();
   const overlay = document.createElement('div');
   overlay.id = 'save-modal-overlay';
