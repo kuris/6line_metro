@@ -387,12 +387,19 @@ body {
    ════════════════════════════════ */
 #layout {
   width: 100%;
-  max-width: 960px;
+  max-width: 1240px; /* 사이드바 추가로 인한 최대폭 상향 */
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 320px 1fr 280px; /* 3컬럼: 열차 / 게임 / 연대기 */
   gap: 0;
   padding: 0 12px;
   align-items: start;
+}
+
+@media (max-width: 1100px) {
+  #layout {
+    grid-template-columns: 300px 1fr; /* 공간 부족 시 연대기를 하단으로 보냄 */
+  }
+  #chronicle-aside { display: none; } /* 혹은 하단 배치 */
 }
 
 /* ════════════════════════════════
@@ -596,8 +603,78 @@ body {
 #output { min-height: 260px; padding-bottom: 14px; flex: 1; }
 
 /* 텍스트 라인 */
-.line { margin-bottom: 4px; opacity: 0; transition: opacity 0.3s; }
+.line { margin-bottom: 4px; opacity: 0; transition: opacity 0.3s; color: var(--text); }
 .line.show { opacity: 1; }
+
+/* ════════════════════════════════
+   우측 생존 연대기 (Aside Panel)
+   ════════════════════════════════ */
+#chronicle-aside {
+  position: sticky;
+  top: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  padding: 16px;
+  min-height: 540px;
+  display: flex;
+  flex-direction: column;
+}
+
+.aside-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+.aside-title {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--line6);
+  letter-spacing: 1px;
+}
+
+#aside-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aside-stats-sub {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  font-size: 11px;
+}
+
+#aside-log {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--dim);
+}
+
+.aside-log-entry {
+  margin-bottom: 6px;
+  line-height: 1.4;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+  animation: logNew 0.3s ease-out;
+}
+.aside-log-entry.warn { color: var(--red); border-left-color: var(--red); }
+.aside-log-entry.event { color: var(--gold); border-left-color: var(--gold); }
+.aside-log-entry.new { color: var(--bright); border-left-color: var(--green); }
+
+@keyframes logNew {
+  from { transform: translateX(10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.aside-log-empty { color: #253540; font-style: italic; font-size: 10px; }
 .line.narrator  { color: var(--text); }
 .line.system    { color: var(--dim); font-size: 12px; letter-spacing: 1px; }
 .line.death     { color: var(--red); }
@@ -1807,48 +1884,19 @@ input:focus-visible {
   animation: statFloatUp 1.2s ease-out forwards;
 }
 
-/* ════════════════════════════════
-   상단 고정형 압축 대시보드 (Stat Bar)
-   ════════════════════════════════ */
-#stat-bar {
-  position: sticky;
-  top: 0;
-  z-index: 150;
-  background: rgba(12, 22, 32, 0.9);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border);
-  margin: -16px -20px 16px; /* 부모 패딩 상쇄 */
-  padding: 10px 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+/* 모달 내 연대기 가독성 개선 */
+.chronicle-modal-inner {
+  color: var(--text) !important;
 }
-
-html.theme-light #stat-bar {
-  background: rgba(245, 240, 225, 0.9);
-  border-color: #d8cfb8;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.chronicle-modal-inner .survival-log {
+  color: var(--text) !important;
+  background: rgba(0,0,0,0.1);
+  padding: 10px;
+  border-radius: 4px;
 }
-
-.stat-group-sub {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed rgba(255,255,255,0.05);
-  font-size: 11px;
+html.theme-light .chronicle-modal-inner .survival-log {
+  background: rgba(255,255,255,0.2);
 }
-html.theme-light .stat-group-sub { border-top-color: rgba(0,0,0,0.05); }
-
-.stat-text-item {
-  color: #6a8a9a;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-html.theme-light .stat-text-item { color: #8a7060; }
-.stat-text-item span { color: #80e0a8; font-weight: 700; }
-html.theme-light .stat-text-item span { color: #a04020; }
 
 @keyframes statFloatUp {
   0%   { transform: translateY(0); opacity: 0; }

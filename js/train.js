@@ -410,12 +410,29 @@ const TrainPanel = (() => {
   //  차내 로그
   // ══════════════════════════════════
   function addLog(text, type = 'info') {
-    // 타임스탬프 대신 십자가(†) 사용 — "데드 로그" 느낌
+    // 1. 기존 기차 패널 로그 (왼쪽)
     const symbol = `[†]`;
     const entry = document.createElement('div');
     entry.className = `tlog-entry ${type}`;
     entry.textContent = `${symbol} ${text}`;
-    logEl.appendChild(entry);
+    if (logEl) logEl.appendChild(entry);
+
+    // 2. 새로운 우측 사이드바 로그 (오른쪽 전용)
+    const asideLog = document.getElementById('aside-log');
+    if (asideLog) {
+      // 초기 '대기 중' 메시지 제거
+      const emptyMsg = asideLog.querySelector('.aside-log-empty');
+      if (emptyMsg) emptyMsg.remove();
+
+      const asideEntry = document.createElement('div');
+      asideEntry.className = `aside-log-entry ${type}`;
+      asideEntry.textContent = text;
+      asideLog.prepend(asideEntry); // 최신 로그가 위로 오도록
+
+      // 사이드바 로그 개수 제한 (가독성 위해 20개)
+      const asideEntries = asideLog.querySelectorAll('.aside-log-entry');
+      if (asideEntries.length > 20) asideEntries[asideEntries.length - 1].remove();
+    }
 
     // 로그가 찍힐 때마다 기괴한 가야금 소리 (아주 낮게)
     if (window.AudioHorror && !window.AudioHorror.isMuted) {
@@ -424,11 +441,13 @@ const TrainPanel = (() => {
       window.AudioHorror.playGayageumNote(f);
     }
 
-    const entries = logEl.querySelectorAll('.tlog-entry');
-    if (entries.length > LOG_MAX) entries[0].remove();
-    requestAnimationFrame(() => entry.classList.add('show'));
-    setTimeout(() => entry.classList.remove('new'), 1800);
-    logEl.scrollTop = logEl.scrollHeight;
+    if (logEl) {
+      const entries = logEl.querySelectorAll('.tlog-entry');
+      if (entries.length > LOG_MAX) entries[0].remove();
+      requestAnimationFrame(() => entry.classList.add('show'));
+      setTimeout(() => entry.classList.remove('new'), 1800);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
   }
 
   // ══════════════════════════════════

@@ -416,8 +416,21 @@ function updateStats() {
   }
 
   updateAvatar();
+  updateAsideStats();
   
   if (typeof autoSave === 'function') autoSave();
+}
+
+/**
+ * 業(업): 점수, 🚇: 이동 거리는 사이드바 전용 요소로 추가 업데이트
+ */
+function updateAsideStats() {
+  const asideScore = document.getElementById('st-score');
+  const asideMove = document.getElementById('st-move');
+  const asideMystery = document.getElementById('st-mystery');
+  if (asideScore) asideScore.textContent = G.score;
+  if (asideMove) asideMove.textContent = G.moveCount;
+  if (asideMystery) asideMystery.textContent = (G.mysteries ? G.mysteries.length : 0) + '개';
 }
 
 /**
@@ -431,69 +444,66 @@ function showSurvivalChronicle() {
   
   let mysteryHtml = '';
   if (!G.mysteries || G.mysteries.length === 0) {
-    mysteryHtml = '<div style="color:#4a6070;text-align:center;padding:10px;font-size:12px">아직 확보된 단서가 없습니다.</div>';
+    mysteryHtml = `<div style="color:var(--dim);text-align:center;padding:10px;font-size:12px">아직 확보된 단서가 없습니다.</div>`;
   } else {
     G.mysteries.forEach(id => {
       const key = id.replace('clue_', '');
       const text = window.MYSTERY_DATA ? (window.MYSTERY_DATA[key] || '해독할 수 없는 파편입니다.') : '데이터 로드 실패';
       mysteryHtml += `
-        <div class="mystery-item" style="border-left:2px solid #80e0a8;padding:6px 10px;margin-bottom:8px;background:rgba(128,224,168,0.05);border-radius:0 4px 4px 0">
-          <div style="font-size:10px;color:#80e0a8;margin-bottom:2px">🔍 STATION.${key}</div>
-          <div style="font-size:12px;color:#c8e8f8;line-height:1.4">${text}</div>
+        <div class="mystery-item" style="border-left:2px solid var(--green);padding:6px 10px;margin-bottom:8px;background:var(--panel-bg);border-radius:0 4px 4px 0">
+          <div style="font-size:10px;color:var(--green);margin-bottom:2px">🔍 STATION.${key}</div>
+          <div style="font-size:12px;color:var(--bright);line-height:1.4">${text}</div>
         </div>
       `;
     });
   }
 
-  // 전체 로그 복제 (Train Log)
   const trainLog = document.getElementById('train-log');
   let logHtml = '기록된 로그가 없습니다.';
   if (trainLog) {
-    // 로그가 너무 많을 경우를 대비해 복제본 생성 후 스타일 조정
     logHtml = trainLog.innerHTML;
   }
 
   const mysteryMax = window.MYSTERY_DATA ? Object.keys(window.MYSTERY_DATA).length : 37;
   const mysteryCount = G.mysteries ? G.mysteries.length : 0;
-  const mysteryRate = Math.floor((mysteryCount / mysteryMax) * 100);
 
   overlay.innerHTML = `
-    <div id="save-modal" style="max-width:500px;width:95%;border-top:2px solid #80e0a8;height:85vh;display:flex;flex-direction:column;max-height:800px">
-      <div id="save-modal-header">
-        <span>📜 생존 연대기 (Survival Chronicle)</span>
+    <div id="save-modal" style="max-width:500px;width:95%;border-top:2px solid var(--line6);height:85vh;display:flex;flex-direction:column;max-height:800px;background:var(--bg)">
+      <div id="save-modal-header" style="background:var(--bg2);border-bottom:1px solid var(--border)">
+        <span style="color:var(--bright)">📜 생존 연대기 (Survival Chronicle)</span>
         <button id="archive-close">✕</button>
       </div>
 
-      <div style="background:#0a1015;padding:12px;border-bottom:1px solid #1e3040;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
-          <div style="font-size:9px;color:#5a8090">業(업)</div>
-          <div style="font-size:16px;color:#80e0a8;font-weight:700">${G.score}</div>
+      <div style="background:var(--bg2);padding:12px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        <div style="border:1px solid var(--border);padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:var(--dim)">業(업)</div>
+          <div style="font-size:16px;color:var(--green);font-weight:700">${G.score}</div>
         </div>
-        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
-          <div style="font-size:9px;color:#5a8090">단서</div>
-          <div style="font-size:16px;color:#c8e8f8;font-weight:700">${mysteryCount}/${mysteryMax}</div>
+        <div style="border:1px solid var(--border);padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:var(--dim)">단서</div>
+          <div style="font-size:16px;color:var(--bright);font-weight:700">${mysteryCount}/${mysteryMax}</div>
         </div>
-        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
-          <div style="font-size:9px;color:#5a8090">해독</div>
-          <div style="font-size:16px;color:#80e0a8">${G.hanjaSuccess}</div>
+        <div style="border:1px solid var(--border);padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:var(--dim)">해독</div>
+          <div style="font-size:16px;color:var(--green)">${G.hanjaSuccess}</div>
         </div>
-        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
-          <div style="font-size:9px;color:#5a8090">이동</div>
-          <div style="font-size:16px;color:#c8e8f8">${G.moveCount}역</div>
+        <div style="border:1px solid var(--border);padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:var(--dim)">이동</div>
+          <div style="font-size:16px;color:var(--bright)">${G.moveCount}역</div>
         </div>
       </div>
 
-      <div style="flex:1;overflow-y:auto;padding:15px;background:#070b0e" class="chronicle-scroll">
-        <div style="font-size:11px;color:#c05020;margin-bottom:10px;border-bottom:1px dashed #302010;padding-bottom:4px;letter-spacing:1px">🔍 COLLECTED MYSTERIES</div>
-        ${mysteryHtml}
+      <div style="flex:1;overflow-y:auto;padding:15px;background:var(--bg)" class="chronicle-scroll">
+        <div style="font-size:11px;color:var(--red);margin-bottom:10px;border-bottom:1px dashed var(--border);padding-bottom:4px;letter-spacing:1px">🔍 COLLECTED MYSTERIES</div>
+        <div class="chronicle-modal-inner">${mysteryHtml}</div>
         
-        <div style="font-size:11px;color:#5a8090;margin:25px 0 10px;border-bottom:1px dashed #1a3040;padding-bottom:4px;letter-spacing:1px">📋 SURVIVAL LOGS (최근순)</div>
-        <div style="font-family:'Courier New',monospace;font-size:11px;line-height:1.6;color:#4a6070">
+        <div style="font-size:11px;color:var(--line6);margin:25px 0 10px;border-bottom:1px dashed var(--border);padding-bottom:4px;letter-spacing:1px">📋 SURVIVAL LOGS (최근순)</div>
+        <div style="font-family:'Courier New',monospace;font-size:11px;line-height:1.6;color:var(--text)" class="survival-log">
           ${logHtml}
         </div>
       </div>
 
-      <div style="padding:10px;text-align:center;border-top:1px solid #1e3040;background:#0a1015">
+      <div style="padding:10px;text-align:center;border-top:1px solid var(--border);background:var(--bg2)">
         <button class="save-load-btn" id="archive-close-btn" style="width:100%;height:44px">기록창 닫기</button>
       </div>
     </div>

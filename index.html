@@ -100,37 +100,6 @@
 
   <!-- 오른쪽: 게임 텍스트 -->
   <div id="game" role="tabpanel" aria-labelledby="tab-game">
-    <div id="stat-bar">
-      <div class="stat-group-main">
-        <div class="stat-item stat-bar-hp">
-          <div class="stat-label">骸(해): <span id="st-hp">100</span></div>
-          <div class="stat-track"><div class="stat-fill" id="st-hp-fill" style="width:100%"></div></div>
-        </div>
-        <div class="stat-item stat-bar-sp">
-          <div class="stat-label">魂(혼): <span id="st-sp">100</span></div>
-          <div class="stat-track"><div class="stat-fill" id="st-sp-fill" style="width:100%"></div></div>
-        </div>
-        <div class="stat-item stat-bar-inf">
-          <div class="stat-label">蝕(식): <span id="st-inf">0</span>%</div>
-          <div class="stat-track"><div class="stat-fill" id="st-inf-fill" style="width:0%"></div></div>
-        </div>
-      </div>
-      
-      <div class="stat-group-sub">
-        <div class="stat-text-item">業(업): <span id="st-score">0</span></div>
-        <div class="stat-text-item" id="st-mystery-wrap">
-          🔍 단서: <span id="st-mystery">0개</span>
-        </div>
-        <div class="stat-text-item" id="st-hanja-wrap">
-          解(해독): <span id="st-hanja">0/0</span>
-        </div>
-        <div class="stat-text-item">🚇 <span id="st-move">0</span>역</div>
-        <div class="stat-text-item" id="st-item-wrap" style="display:none">
-          🎒 <span id="st-item">없음</span>
-        </div>
-      </div>
-    </div>
-    
     <!-- 이벤트 카드 뷰 -->
     <div id="event-card">
       <div id="output"></div>
@@ -147,6 +116,42 @@
       </div>
     </div>
   </div>
+
+  <!-- 우측: 생존 기록 및 연대기 (PC 전용 사이드바) -->
+  <aside id="chronicle-aside">
+    <div class="aside-header">
+      <span class="aside-title">📊 SURVIVAL STATUS</span>
+    </div>
+    
+    <div id="aside-stats">
+      <div class="stat-item aside-hp">
+        <div class="stat-label">骸(해): <span id="st-hp">100</span></div>
+        <div class="stat-track"><div class="stat-fill" id="st-hp-fill" style="width:100%"></div></div>
+      </div>
+      <div class="stat-item aside-sp">
+        <div class="stat-label">魂(혼): <span id="st-sp">100</span></div>
+        <div class="stat-track"><div class="stat-fill" id="st-sp-fill" style="width:100%"></div></div>
+      </div>
+      <div class="stat-item aside-inf">
+        <div class="stat-label">蝕(식): <span id="st-inf">0</span>%</div>
+        <div class="stat-track"><div class="stat-fill" id="st-inf-fill" style="width:0%"></div></div>
+      </div>
+      
+      <div class="aside-stats-sub">
+        <div class="stat-text-item">業(업): <span id="st-score">0</span></div>
+        <div class="stat-text-item">🔍 단서: <span id="st-mystery">0개</span></div>
+        <div class="stat-text-item">🚇 <span id="st-move">0</span>역 통과</div>
+      </div>
+    </div>
+
+    <div class="aside-header" style="margin-top:20px;">
+      <span class="aside-title">📜 SURVIVAL LOGS</span>
+    </div>
+    <div id="aside-log">
+      <!-- 최근 기록이 여기에 실시간으로 표시됨 -->
+      <div class="aside-log-empty">기록 대기 중...</div>
+    </div>
+  </aside>
 
 </div>
 
