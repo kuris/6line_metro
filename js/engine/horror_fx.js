@@ -120,7 +120,7 @@ class HorrorFXEngine {
   // 5. 시작 연출 (Initial Massive Scare)
   scareMassive() {
     this.setIntensity(1.0);
-    this.startBloodDrip(150); 
+    // this.startBloodDrip(150); // 피 내리는 효과 제거 요청
     this.flashBlood(2200);
     this.glitch(1300);
     for(let i=0; i<6; i++) setTimeout(() => this.spawnSplatter(), 300 + i*180);
