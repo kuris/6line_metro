@@ -7,7 +7,7 @@
 'use strict';
 
 const GAME_URL    = 'https://bbkjhdeq.gensparkspace.com/';
-const SAVE_VER    = '4';   // 포맷 버전 (미스터리 및 퀴즈 상태 추가)
+const SAVE_VER    = '5';   // 5: G.flags 객체 직렬화 개선 (중첩 객체 지원)
 
 /* ──────────────────────────────────────────
    인코딩 / 디코딩
@@ -18,9 +18,8 @@ function saveEncode() {
   const ITEM_MAP  = { '수상한 메모지': 0, '카세트테이프': 1 };
   const invIdx    = G.inventory.map(i => ITEM_MAP[i] ?? i).filter(i => i !== undefined);
 
-  // 플래그 압축 (key:value → 'k1=v1,k2=v2')
-  const flagStr   = Object.entries(G.flags || {})
-    .map(([k, v]) => `${k}=${v}`).join(',');
+  // 플래그 (JSON 직렬화로 중첩 객체까지 완벽 보존)
+  const flags = G.flags || {};
 
   const payload = {
     v:   SAVE_VER,
@@ -33,7 +32,7 @@ function saveEncode() {
     m:   G.missionCount,
     mv:  G.moveCount,
     inv: invIdx,
-    f:   flagStr,
+    f:   flags,
     tod: G.timeOfDay || 'noon',
     ha:  G.hanjaAttempts || 0,
     hs:  G.hanjaSuccess || 0,
@@ -61,8 +60,8 @@ function saveDecode(b64) {
     const json    = decodeURIComponent(atob(b64));
     const payload = JSON.parse(json);
 
-    // 버전 체크
-    if (payload.v !== SAVE_VER) {
+    // 버전 체크 (버전 4, 5 모두 허용하거나 마이그레이션 가능)
+    if (payload.v !== SAVE_VER && payload.v !== '4') {
       return { error: '버전이 다른 세이브 코드입니다.' };
     }
 
@@ -78,13 +77,23 @@ function saveDecode(b64) {
       typeof i === 'number' ? ITEM_NAMES[i] : i
     ).filter(Boolean);
 
-    // 플래그 복원
-    const flags = {};
+    // 플래그 복원 (객체 또는 문자열 포맷 지원)
+    let flags = {};
     if (payload.f) {
-      payload.f.split(',').forEach(pair => {
-        const [k, v] = pair.split('=');
-        if (k) flags[k] = isNaN(v) ? v : Number(v);
-      });
+      if (typeof payload.f === 'object') {
+        flags = payload.f;
+      } else if (typeof payload.f === 'string') {
+        payload.f.split(',').forEach(pair => {
+          const [k, v] = pair.split('=');
+          if (k) flags[k] = isNaN(v) ? v : Number(v);
+        });
+      }
+    }
+    
+    // [중요] 뭉개진 데이터 복구 처리
+    if (flags.searchedData === "[object Object]") {
+      console.warn('[save] Corrupted searchedData detected. Resetting to empty object.');
+      flags.searchedData = {};
     }
 
     return {

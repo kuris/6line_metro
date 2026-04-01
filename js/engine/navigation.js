@@ -197,8 +197,10 @@ window.sceneStationHub = async function(stIdx) {
   const st = STATIONS[stIdx];
   const dirLabel = (G.dirStep || 1) >= 0 ? '상행 ▲' : '하행 ▼';
   
-  // 탐색 횟수 추적
-  G.flags.searchedData = G.flags.searchedData || {};
+  // 탐색 횟수 추적 (손상 방지 가드 포함)
+  if (!G.flags.searchedData || typeof G.flags.searchedData !== 'object') {
+    G.flags.searchedData = {};
+  }
   const searches = G.flags.searchedData[stIdx] || 0;
 
   const epDiv = document.createElement('div');

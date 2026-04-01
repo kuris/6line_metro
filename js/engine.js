@@ -621,17 +621,17 @@ function toggleTheme() {
   sfx.ui && sfx.ui();
 }
 
-// 기본값을 라이트 테마로 설정
+// 기본값을 다크 테마로 설정
 (function() {
   try {
     const saved = localStorage.getItem('line6_theme');
-    if (saved === 'dark') {
-      _applyTheme(false);
+    if (saved === 'light') {
+      _applyTheme(true);
     } else {
-      _applyTheme(true); // Default
+      _applyTheme(false); // Default: Dark
     }
   } catch(e) {
-    _applyTheme(true);
+    _applyTheme(false);
   }
 })();
 
