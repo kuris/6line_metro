@@ -7,23 +7,23 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── 다크 테마 (기본) ── */
+/* ── 다크 테마 (기본) - 밝고 깔끔한 서울 2033 스타일 ── */
 :root {
-  --bg:        #070b0e;
-  --bg2:       #0b1218;
-  --bg3:       #0f1820;
-  --text:      #b8c8d8;
-  --dim:       #4a6070;
-  --green:     #5aaa7a;
-  --bright:    #80e0a8;
-  --red:       #aa5050;
-  --gold:      #c8a840;
-  --blue:      #4080b0;
-  --line6:     #c05020;
-  --line6dim:  #703010;
-  --border:    #152030;
-  --border2:   #1e3040;
-  --panel-bg:  #060e14;
+  --bg:        #181a1c;
+  --bg2:       #202225;
+  --bg3:       #282b2e;
+  --text:      #e0e4e8;
+  --dim:       #8a9096;
+  --green:     #6cc08a;
+  --bright:    #a0ebd0;
+  --red:       #d25a5a;
+  --gold:      #e0b850;
+  --blue:      #5090d0;
+  --line6:     #d06030;
+  --line6dim:  #804020;
+  --border:    #303438;
+  --border2:   #3a3f44;
+  --panel-bg:  #1e2022;
   --touch-min: 44px;
   --face-calm: #80e0a8;
   --face-anxious: #ffaa22;
@@ -629,9 +629,9 @@ body {
 /* 선택지 버튼 */
 #choices { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
 .choice-btn {
-  background: rgba(10,18,26,0.6);
+  background: var(--bg2);
   border: 1px solid var(--border);
-  color: var(--green);
+  color: var(--text);
   font-family: 'Noto Serif KR', monospace;
   font-size: 14.5px;
   padding: 16px 20px;
@@ -639,48 +639,48 @@ body {
   cursor: pointer;
   text-align: left;
   transition: all 0.2s;
-  border-radius: 4px;
+  border-radius: 6px;
   position: relative;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
-  display: block;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 .choice-btn::before {
   content: '';
   position: absolute; left: 0; top: 0; bottom: 0; width: 0;
-  background: rgba(90,170,122,0.06);
+  background: rgba(108,192,138,0.15);
   transition: width 0.2s;
 }
-.choice-btn:hover, .choice-btn:focus-visible { border-color: var(--green); color: var(--bright); background: rgba(40,80,60,0.4); outline: none; }
+.choice-btn:hover, .choice-btn:focus-visible { border-color: var(--green); color: var(--bright); background: var(--bg3); outline: none; }
 .choice-btn:hover::before { width: 100%; }
 .choice-btn:active { transform: scale(0.99); }
-.choice-btn.danger { color: var(--red); border-color: #3a1818; }
-.choice-btn.danger:hover { border-color: var(--red); background: rgba(80,30,30,0.4); }
-.choice-btn.reward { color: var(--gold); border-color: #3a3010; }
-.choice-btn.reward:hover { border-color: var(--gold); background: rgba(80,60,20,0.4); }
+.choice-btn.danger { color: var(--red); }
+.choice-btn.danger:hover { border-color: var(--red); background: rgba(210,90,90,0.15); }
+.choice-btn.reward { color: var(--gold); }
+.choice-btn.reward:hover { border-color: var(--gold); background: rgba(224,184,80,0.15); }
 
 /* 특성 뱃지(직업 전용 선택지 등) 스타일링은 동적으로 생성될 span 컨테이너를 위해 준비 */
 .choice-btn .perk-badge {
   display: inline-block;
   background: var(--gold);
-  color: #000;
+  color: #1a1a1a;
   font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  margin-right: 8px;
-  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-right: 10px;
+  font-weight: 700;
 }
 
 /* 이벤트 카드 컨테이너 */
 #event-card {
-  background: rgba(8, 14, 20, 0.4);
-  border: 1px solid #1a2a3a;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.25);
   display: flex;
   flex-direction: column;
 }

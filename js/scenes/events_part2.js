@@ -29,7 +29,7 @@ const EVENTS_PART2 = {
           ['業(업) +5 / 魂(혼) -10 — 존재하지 않는 자와의 대화.', 'life', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 눈을 피하고 무시한다', async () => {
         G.health -= 5; updateStats();
@@ -38,7 +38,7 @@ const EVENTS_PART2 = {
           ['骸(해) -5 — 어깨 위에 남은 보이지 않는 무게.', 'warn', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -62,7 +62,7 @@ const EVENTS_PART2 = {
           ['骸(해) -15 / 魂(혼) -10 — 피의 난도질.', 'warn', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 숨을 죽이고 비명을 참으며 버틴다', async () => {
         G.sanity -= 20; G.score += 15; updateStats();
@@ -71,7 +71,7 @@ const EVENTS_PART2 = {
           ['業(업) +15 / 魂(혼) -20 — 추악한 권유.', 'life', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -91,14 +91,14 @@ const EVENTS_PART2 = {
         G.sanity -= 5; updateStats();
         await seq([['"다음에 만나면 네 것도 구경시켜줘..."', 'whisper', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② "가져가보고 싶으면 해봐"라고 도발한다', async () => {
         G.health -= 10; G.score += 15; updateStats();
         if (window.HorrorFX) window.HorrorFX.flashRed(400);
         await seq([['청년의 손가락이 순간 발톱으로 변해 당신의 팔을 긁는다.', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -118,14 +118,14 @@ const EVENTS_PART2 = {
         G.health -= 5; G.infection += 10; updateStats();
         await seq([['터지는 유충들의 즙이 신발에 튀어 살을 파고든다.', 'warn', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 기괴한 호기심으로 유충들을 채집한다', async () => {
         G.sanity -= 15; G.score += 20; updateStats();
         addItem('살아있는 유충 병');
         await seq([['손가락 끝을 타는 유충들의 점액질이 소름 끼치게 부드럽다.', 'highlight', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -146,14 +146,14 @@ const EVENTS_PART2 = {
         G.health -= 15; G.score += 15; updateStats();
         await seq([['간신히 문을 닫았지만, 당신의 팔은 이미 검게 멍들어 있다.', 'narrator', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 안개 속으로 손을 내밀어 수용한다', async () => {
         G.infection += 30; G.score += 10; updateStats();
         if (window.HorrorFX) window.HorrorFX.glitch(500);
         await seq([['안개가 당신의 팔을 타고 폐 속까지 침투한다. 차갑고 달콤하다.', 'narrator', 1800]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -174,13 +174,13 @@ const EVENTS_PART2 = {
         G.health -= 20; updateStats();
         await seq([['깨진 유리 조각들이 당신의 온몸에 박히고 피가 거울에 스며든다.', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 거울 속의 자신과 눈을 맞춘다 (수용)', async () => {
         G.sanity -= 35; G.score += 40; updateStats();
         await seq([['거울 속의 존재와 영혼이 뒤바뀌는 듯한 환청이 들린다.', 'death', 1800]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -201,14 +201,14 @@ const EVENTS_PART2 = {
         G.infection += 20; G.score += 30; updateStats();
         await seq([['이성이 마비된다. 죽음의 무도회(Danse Macabre)가 시작된다.', 'death', 1800]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② "지옥에나 가라"며 잔을 엎어버린다', async () => {
         G.sanity -= 15; updateStats();
         if (window.HorrorFX) window.HorrorFX.glitch(500);
         await seq([['해골들이 일제히 멈춰 서서 당신을 비난하듯 턱을 딱딱거린다.', 'danger', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   }

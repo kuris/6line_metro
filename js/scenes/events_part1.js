@@ -29,7 +29,7 @@ Object.assign(STATION_EVENTS, {
           ['魂(혼) -5 — 굳은 결의에 대한 대가.', 'warn', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 두려움을 억누르며 자리에 앉는다', async () => {
         G.health -= 5; updateStats();
@@ -38,7 +38,7 @@ Object.assign(STATION_EVENTS, {
           ['骸(해) -5 — 얼어붙는 육신.', 'warn', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -62,7 +62,7 @@ Object.assign(STATION_EVENTS, {
           ['業(업) +20 / 魂(혼) -15 — 고통을 지불하고 얻은 전진.', 'life', 2000],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 그들의 손을 거칠게 뿌리친다 (저항)', async () => {
         G.health -= 20; updateStats();
@@ -72,7 +72,7 @@ Object.assign(STATION_EVENTS, {
           ['骸(해) -20 — 처절한 저항의 흔적.', 'warn', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -93,14 +93,14 @@ Object.assign(STATION_EVENTS, {
         G.health -= 10; G.score += 5; updateStats();
         await seq([['사람들의 옷자락이 가시처럼 당신의 살을 훑고 지나간다.', 'danger', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 사람들에게 둘러싸인 채 비명조차 지르지 못한다', async () => {
         G.health -= 25; G.sanity -= 15; updateStats();
         if (window.HorrorFX) window.HorrorFX.glitch(500);
         await seq([['수십 명의 체중이 당신의 흉곽을 압박하여 숨을 쉴 수 없다.', 'death', 1800]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -118,13 +118,13 @@ Object.assign(STATION_EVENTS, {
         G.infection += 15; updateStats();
         await seq([['손 끝이 타들어가는 듯한 고통과 함께 기이한 환상이 보인다.', 'warn', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 눈을 돌리고 합장하며 기도한다', async () => {
         G.sanity += 10; updateStats();
         await seq([['비명 섞인 염불 소리가 귓가를 맴돌지만 마음은 조금 진정된다.', 'life', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -145,13 +145,13 @@ Object.assign(STATION_EVENTS, {
         G.health -= 15; G.infection += 10; updateStats();
         await seq([['차가운 손들이 당신의 팔을 잡고 아래로 강하게 끌어당긴다!', 'danger', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 자리에 올라서서 물을 피한다', async () => {
         G.sanity -= 10; updateStats();
         await seq([['당신의 발목을 스치는 검은 그림자들에 소름이 끼친다.', 'warn', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -176,7 +176,7 @@ Object.assign(STATION_EVENTS, {
           ['業(업) +10 / 骸(해) -15 — 파괴의 흔적.', 'life', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 눈을 감고 데이터의 흐름에 눈을 감는다', async () => {
         G.sanity -= 20; G.infection += 15; updateStats();
@@ -185,7 +185,7 @@ Object.assign(STATION_EVENTS, {
           ['魂(혼) -20 / 蝕(식) +15% — 신경 잠식.', 'warn', 1500],
         ]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -205,14 +205,14 @@ Object.assign(STATION_EVENTS, {
         G.sanity -= 25; G.score += 30; updateStats();
         await seq([['비참한 화음이 당신의 심장을 찢어발긴다.', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 그들의 노래를 비웃는다', async () => {
         G.health -= 15; G.sanity -= 10; updateStats();
         if (window.HorrorFX) window.HorrorFX.flashBlood(800);
         await seq([['분노한 관중들이 유리창을 피 묻은 손으로 긁어대며 비난한다.', 'danger', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   }

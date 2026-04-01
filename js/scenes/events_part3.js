@@ -22,13 +22,13 @@ const EVENTS_PART3 = {
         if (window.HorrorFX) window.HorrorFX.scare();
         await seq([['거대한 눈동자가 터널 전체를 메운 채 당신을 노려보고 있다!', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 바닥에 엎드려 숨을 죽인다', async () => {
         G.health -= 10; updateStats();
         await seq([['열차가 요동치며 누군가의 육중한 발소리가 지붕 위를 지나간다.', 'narrator', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -49,14 +49,14 @@ const EVENTS_PART3 = {
         G.health -= 10; G.sanity -= 5; updateStats();
         await seq([['뿌리친 자리에 시커먼 손자국이 남으며 살이 타들어 간다.', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 내 심장 대신 業(업)을 내어준다', async () => {
         G.score -= 20; G.sanity -= 15; updateStats();
         if (window.HorrorFX) window.HorrorFX.glitch(400);
         await seq([['당신의 業이 검은 연기가 되어 노파의 자루 속으로 빨려 들어간다.', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -75,13 +75,13 @@ const EVENTS_PART3 = {
         G.score += 20; G.sanity -= 10; updateStats();
         await seq([['"고마워... 고마워..." 해골이 당신의 손을 날카롭게 깨문다.', 'warn', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 사양하고 고개를 돌린다', async () => {
         G.health -= 5; updateStats();
         await seq([['보이지 않는 기운이 심장을 강하게 압박하며 지나간다.', 'warn', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -99,14 +99,14 @@ const EVENTS_PART3 = {
         G.score += 10; updateStats();
         await seq([['돈다발을 삼키는 소름끼치는 웃음 소리가 열차 안을 가득 채운다.', 'narrator', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 그들에게 거짓된 정보를 속삭인다', async () => {
         G.sanity -= 10; G.score += 15; updateStats();
         if (window.HorrorFX) window.HorrorFX.glitch(300);
         await seq([['당신의 거짓을 삼킨 망령들이 비명을 지르며 썩어간다.', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -124,14 +124,14 @@ const EVENTS_PART3 = {
         G.health -= 15; updateStats();
         await seq([['떨어지는 파편에 등이 찢겨나가는 감각이 느껴진다.', 'warn', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 돌 하나를 잡아 무기로 삼는다', async () => {
         addItem('부서진 돌조각');
         G.score += 20; updateStats();
         await seq([['손바닥이 찢어지며 피가 돌 속으로 스며든다.', 'death', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -149,13 +149,13 @@ const EVENTS_PART3 = {
         G.infection += 20; updateStats();
         await seq([['폐 속에서 식물들이 자라나는 듯한 기괴한 통증이 느껴진다.', 'warn', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 코와 입을 막고 환승 구역을 피한다', async () => {
         G.sanity -= 10; updateStats();
         await seq([['뒤에서 누군가 꽃 묻은 손으로 당신의 목을 조르려 한다!', 'danger', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -173,13 +173,13 @@ const EVENTS_PART3 = {
         G.health -= 20; updateStats();
         await seq([['살이 타버리는 고통과 함께 당신의 기억 일부가 소실된다.', 'danger', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }],
       ['② 열차 깊숙한 곳으로 몸을 숨긴다', async () => {
         G.sanity -= 15; updateStats();
         await seq([['연기 속에서 수천 개의 눈동자가 당신을 찾아내려 한다.', 'whisper', 1500]]);
         TrainPanel.playDepart();
-        await sceneNextStation(stIdx + (G.dirStep || 1));
+        await sceneStationHub(stIdx);
       }]
     ]);
   },
@@ -203,7 +203,7 @@ const EVENTS_PART3 = {
           ['지옥의 끝에서 당신은 안식을 찾았다.', 'result', 1800],
         ]);
         if (window.sceneEnding) window.sceneEnding('ascension');
-        else sceneNextStation(stIdx + (G.dirStep || 1));
+        else sceneStationHub(stIdx);
       }],
       ['② 거부하고 루프를 지속한다', async () => {
         G.health -= 50; G.score += 100; updateStats();

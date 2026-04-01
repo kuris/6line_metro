@@ -148,78 +148,173 @@ async function sceneNextStation(nextIdx) {
       const quizRan = await maybeRunHanjaQuiz(st);
       if (quizRan) {
         await print('', 'blank');
-        await print('열차는 멈추지 않고 계속 달려야 한다...', 'narrator', 300);
+        await print('역사 안으로 발을 내딛는다...', 'narrator', 300);
         await new Promise(r => setTimeout(r, 1000));
       }
     }
 
-    // 6. 이벤트 분기
-    if (st.hasEvent && st.eventId && STATION_EVENTS[st.eventId]) {
-      await STATION_EVENTS[st.eventId](nextIdx);
-    } 
-    else if (st.hasEvent || Math.random() < 0.25) { 
-      const poolType = (Math.random() < 0.4 + (G.infection / 200)) ? 'battle' : 'generic';
-      const pool = EVENT_POOL[poolType] || [];
-      const available = pool.filter(ev => !G.seenEvents.includes(ev.id));
-      
-      if (available.length > 0) {
-        const selected = available[Math.floor(Math.random() * available.length)];
-        G.seenEvents.push(selected.id);
-        TrainPanel.addLog(`돌발 조우: ${selected.title}`, 'warn');
-        await selected.run(nextIdx);
+    // 도착 후 연출 표시 후 허브(Station Hub) 진입
+    if (typeof getTrivia === 'function') {
+      const trivia = getTrivia(st.id);
+      if (trivia && trivia.cards && trivia.cards.length > 0) {
+        TrainPanel.addLog(`${st.name}: ${trivia.tip}`, 'info');
+        await seq([
+          ['', 'blank', 0],
+          [st.desc, 'narrator', 200],
+          ['', 'blank', 400],
+        ]);
+        for (const card of trivia.cards) {
+          await print('', 'blank');
+          await print(`${card.icon} ${card.title}`, 'highlight');
+          const plainBody = card.body.replace(/<[^>]+>/g, '').replace(/\n\s*/g, ' ');
+          await print(plainBody, 'narrator');
+        }
       } else {
-        await showTriviaPass(st, nextIdx);
+        await seq([
+          ['', 'blank', 0],
+          [st.desc, 'narrator', 200],
+          ['', 'blank', 400],
+        ]);
       }
-    } 
-    else {
-      await showTriviaPass(st, nextIdx);
     }
+
+    // 허브로 이동하기 전에 내비게이션 플래그 해제
+    _isNavigating = false;
+    await sceneStationHub(nextIdx);
+
   } catch (e) {
     console.error('Navigation Error:', e);
-  } finally {
     _isNavigating = false;
   }
 }
 
 /**
- * 이벤트 없는 역 통과 — trivia 카드 표시
+ * 역(Station) 허브 화면 - 탐험, 휴식, 이동 선택
  */
-async function showTriviaPass(st, stIdx) {
-  const trivia = (typeof getTrivia === 'function') ? getTrivia(st.id) : null;
-
-  if (trivia && trivia.cards && trivia.cards.length > 0) {
-    TrainPanel.addLog(`${st.name}: ${trivia.tip}`, 'info');
-    await seq([
-      ['', 'blank', 0],
-      [st.desc, 'narrator', 200],
-      ['', 'blank', 400],
-    ]);
-    for (const card of trivia.cards) {
-      await print('', 'blank');
-      await print(`${card.icon} ${card.title}`, 'highlight');
-      const plainBody = card.body.replace(/<[^>]+>/g, '').replace(/\n\s*/g, ' ');
-      await print(plainBody, 'narrator');
-    }
-  } else {
-    await seq([
-      ['', 'blank', 0],
-      [st.desc, 'narrator', 200],
-      ['', 'blank', 400],
-      ['창밖으로 역 간판이 스쳐지나간다.', 'narrator', 600],
-      ['', 'blank', 800],
-    ]);
-  }
-
-  TrainPanel.addLog(`${st.name} 통과`, 'info');
-  await maybeRandomEvent();
-  await print('', 'blank');
-
+window.sceneStationHub = async function(stIdx) {
+  clearUI();
+  
+  const st = STATIONS[stIdx];
   const dirLabel = (G.dirStep || 1) >= 0 ? '상행 ▲' : '하행 ▼';
+  
+  // 탐색 횟수 추적
+  G.flags.searchedData = G.flags.searchedData || {};
+  const searches = G.flags.searchedData[stIdx] || 0;
+
+  const epDiv = document.createElement('div');
+  epDiv.className = 'line ep-header show';
+  epDiv.innerHTML = `
+    <div class="ep-num">STATION ${st.code} [현재 머무는 중]</div>
+    <div class="ep-title">${st.name} <span style="font-size:11px;color:#4a6070;font-weight:400">${st.nameEn}</span></div>
+    <div class="ep-sub">무엇을 할지 결정해야 합니다.</div>`;
+  OUT.appendChild(epDiv);
+
+  await print('스산한 승강장의 공기가 당신을 감돈다.', 'narrator', 300);
+  
+  const exploreRiskText = searches > 0 ? ` (탐색 횟수: ${searches} - 위험 증가)` : '';
 
   choices([
-    [`▸  계속 이동한다 (${dirLabel})`, () => {
+    [`🕵️ 역 내부 탐색${exploreRiskText}`, async () => {
+      G.flags.searchedData[stIdx] = searches + 1;
+      await exploreStation(st, stIdx, searches);
+    }],
+    [`💊 승강장 벤치에서 휴식`, async () => {
+      await restAtStation(stIdx);
+    }],
+    [`🚇 열차 탑승 (다음 역으로 ${dirLabel})`, async () => {
       TrainPanel.playDepart();
       sceneNextStation(stIdx + (G.dirStep || 1));
     }]
   ]);
+};
+
+/**
+ * 역 내부 탐색 로직
+ */
+async function exploreStation(st, stIdx, searches) {
+  clearUI();
+  await print(`${st.name}역 구석구석을 살펴보기 시작한다...`, 'narrator', 500);
+
+  // 탐색을 반복할수록 위험도 극증
+  if (searches >= 2) {
+    TrainPanel.addLog('위험한 탐색 - 둥지 접근', 'danger');
+    G.infection += 10;
+    updateStats();
+    if (window.HorrorFX) window.HorrorFX.flashBlood(600);
+    
+    await seq([
+      ['...', 'blank', 300],
+      ['너무 오래 머물렀다. 어둠 속에서 수많은 시선이 당신을 꿰뚫어본다.', 'death', 800],
+      ['蝕(식) +10% — 어둠의 오염에 노출됨.', 'warn', 1200]
+    ]);
+  }
+
+  // 역 고유 이벤트 실행 (첫 탐색 시)
+  if (st.hasEvent && st.eventId && STATION_EVENTS[st.eventId] && !G.seenEvents.includes(`main_${st.id}`)) {
+    G.seenEvents.push(`main_${st.id}`);
+    await STATION_EVENTS[st.eventId](stIdx);
+    return;
+  }
+
+  // 고유 이벤트가 없거나 소진된 경우 랜덤 돌발 조우
+  const poolType = (Math.random() < 0.3 + (searches * 0.2) + (G.infection / 200)) ? 'battle' : 'generic';
+  const pool = EVENT_POOL[poolType] || [];
+  const available = pool.filter(ev => !G.seenEvents.includes(ev.id));
+  
+  if (available.length > 0) {
+    const selected = available[Math.floor(Math.random() * available.length)];
+    G.seenEvents.push(selected.id);
+    TrainPanel.addLog(`돌발 조우: ${selected.title}`, 'warn');
+    await selected.run(stIdx);
+  } else {
+    // 풀이 떨어졌을 경우 무작위 텍스트 전투 조우
+    await maybeRandomEvent();
+    await seq([
+      ['더 이상 특별한 것은 보이지 않는다.', 'narrator', 1000]
+    ]);
+    await print('', 'blank');
+    choices([
+      ['[ 돌아가기 ]', () => sceneStationHub(stIdx)]
+    ]);
+  }
 }
+
+/**
+ * 벤치 휴식 로직
+ */
+async function restAtStation(stIdx) {
+  clearUI();
+  TrainPanel.addLog('짧은 휴식', 'info');
+  
+  const healAmt = 10;
+  G.sanity += healAmt;
+  if(G.sanity > 100) G.sanity = 100;
+  
+  // 휴식 부작용 
+  const infectedHeal = Math.random() < 0.3;
+  if(infectedHeal) {
+    G.infection += 5;
+  }
+  updateStats();
+
+  await seq([
+    ['차가운 스테인리스 벤치에 몸을 뉘었다.', 'narrator', 500],
+    ['눈을 붙이자 얕은 잠이 쏟아진다...', 'narrator', 1500],
+    ['', 'blank', 2000],
+    [`魂(혼) +${healAmt} — 긴장이 풀려 이성을 약간 회복했다.`, 'life', 3000],
+  ]);
+
+  if(infectedHeal) {
+    await seq([
+      ['하지만 자는 동안 호흡기를 통해 포자가 스며들었다.', 'danger', 1000],
+      ['蝕(식) +5% — 감염 증가.', 'warn', 1500]
+    ]);
+  }
+
+  await print('', 'blank');
+  choices([
+    ['[ 일어선다 ]', () => sceneStationHub(stIdx)]
+  ]);
+}
+
+// (showTriviaPass 삭제 - 허브 엔진으로 통합됨)

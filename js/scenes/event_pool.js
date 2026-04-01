@@ -28,13 +28,13 @@ window.EVENT_POOL = {
               await modifyStat('infection', 10);
             }
             TrainPanel.playDepart();
-            await sceneNextStation(stIdx + (G.dirStep || 1));
+            await sceneStationHub(stIdx);
           }],
           ['② 오염 구역을 설정하고 자리를 이탈한다', async () => {
             await seq([['본능적인 위험을 직감하고 자리를 옮겼습니다. 호흡이 안정됩니다.', 'life', 200]]);
             G.sanity = Math.min(100, G.sanity + 5);
             TrainPanel.playDepart();
-            await sceneNextStation(stIdx + (G.dirStep || 1));
+            await sceneStationHub(stIdx);
           }]
         ]);
       }
@@ -53,13 +53,13 @@ window.EVENT_POOL = {
             await seq([['고통스럽지만 안내방송 사이에 섞인 다음 역 정보를 읽어냈습니다.', 'highlight', 200]]);
             G.score += 5;
             TrainPanel.playDepart();
-            await sceneNextStation(stIdx + (G.dirStep || 1));
+            await sceneStationHub(stIdx);
           }],
           ['② 비상 통화 장치를 눌러 상황을 보고한다', async () => {
             await seq([['응답이 없습니다. 하지만 통화 장치를 누르는 동안 소음이 잦아듭니다.', 'narrator', 200]]);
             await modifyStat('sanity', -5);
             TrainPanel.playDepart();
-            await sceneNextStation(stIdx + (G.dirStep || 1));
+            await sceneStationHub(stIdx);
           }]
         ]);
       }
@@ -88,7 +88,7 @@ window.EVENT_POOL = {
         if (win) {
           await seq([['개체로부터 안전 거리를 확보하고 평정을 되찾습니다.', 'life', 200]]);
           TrainPanel.playDepart();
-          await sceneNextStation(stIdx + (G.dirStep || 1));
+          await sceneStationHub(stIdx);
         }
       }
     },
@@ -112,7 +112,7 @@ window.EVENT_POOL = {
         if (win) {
           await seq([['치열한 대치 끝에 개체의 활동이 정지되었습니다.', 'life', 200]]);
           TrainPanel.playDepart();
-          await sceneNextStation(stIdx + (G.dirStep || 1));
+          await sceneStationHub(stIdx);
         }
       }
     }
