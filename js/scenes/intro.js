@@ -64,9 +64,9 @@ async function sceneIntro() {
   let isQuickStart = false;
   await new Promise(resolve => {
     const presets = [
-      { name: '김도현', age: '20대', gender: '여성', job: '작곡가' },
-      { name: '박지민', age: '30대', gender: '남성', job: '보안 요원' },
-      { name: '이서윤', age: '40대', gender: '여성', job: '의료진' }
+      { name: '지현우', age: '20대', gender: '남성', job: '휴학생' },
+      { name: '김서아', age: '30대', gender: '여성', job: '디자이너' },
+      { name: '백종혁', age: '40대', gender: '남성', job: '전직 형사' }
     ];
 
     const opts = presets.map(p => [

@@ -926,7 +926,7 @@ body {
 
 /* 우상단 고정 버튼 */
 .corner-btn {
-  position: fixed; top: 12px;
+  position: fixed; bottom: 12px;
   background: #070f18; border: 1px solid #1e3040;
   color: #3a5a70; width: 38px; height: 38px;
   border-radius: 50%; cursor: pointer;
