@@ -78,6 +78,24 @@ const G = {
   seenEvents:    [],     // 👁️ 이미 본 이벤트 목록 (중복 방지용)
 };
 
+// ────────────────────────────────
+//  UI 피드백 (팝업 효과 등)
+// ────────────────────────────────
+let lastStats = { health: 100, sanity: 100, infection: 0, score: 0 };
+
+function showStatEffect(el, delta, label, color) {
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.className = 'stat-popup';
+  popup.style.left = `${rect.left + rect.width / 2}px`;
+  popup.style.top = `${rect.top}px`;
+  popup.style.color = color;
+  popup.textContent = `${delta > 0 ? '+' : ''}${delta} ${label}`;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 1200);
+}
+
 function gn() {
   return `<span style="color:#80e0a8;font-weight:700">${G.playerName}</span>`;
 }
@@ -301,6 +319,36 @@ function updateStats() {
   if (ST_SCR) ST_SCR.textContent = G.score;
   if (ST_MOV) ST_MOV.textContent = G.moveCount;
 
+  if (!lastStats._init) {
+    lastStats.health = G.health;
+    lastStats.sanity = G.sanity;
+    lastStats.score = G.score;
+    lastStats.infection = G.infection;
+    lastStats._init = true;
+  }
+
+  // 수치 변화 감지 및 팝업 연출
+  if (G.health !== lastStats.health) {
+    const d = G.health - lastStats.health;
+    showStatEffect(ST_HP, d, '骸', d > 0 ? '#80e0a8' : '#ff5050');
+    lastStats.health = G.health;
+  }
+  if (G.sanity !== lastStats.sanity) {
+    const d = G.sanity - lastStats.sanity;
+    showStatEffect(ST_SP, d, '魂', d > 0 ? '#80e0a8' : '#ff5050');
+    lastStats.sanity = G.sanity;
+  }
+  if (G.score !== lastStats.score) {
+    const d = G.score - lastStats.score;
+    showStatEffect(ST_SCR, d, '業', d > 0 ? '#80e0a8' : '#ff5050');
+    lastStats.score = G.score;
+  }
+  if (G.infection !== lastStats.infection) {
+    const d = G.infection - lastStats.infection;
+    showStatEffect(ST_INF, d, '蝕', d > 0 ? '#ff5050' : '#80e0a8');
+    lastStats.infection = G.infection;
+  }
+
   // 프로그레스 바 너비 업데이트
   if (ST_HP_FILL) ST_HP_FILL.style.width = Math.max(0, Math.min(100, G.health)) + '%';
   if (ST_SP_FILL) ST_SP_FILL.style.width = Math.max(0, Math.min(100, G.sanity)) + '%';
@@ -375,26 +423,37 @@ function updateStats() {
 /**
  * 수집한 미스터리 단서들을 모아 보여주는 아카이브 모달
  */
-function showMysteryArchive() {
+/**
+ * 생존 연대기 (Chronicle): 스탯, 단서, 전체 로그 통합 창
+ */
+function showSurvivalChronicle() {
   if (window.sfx && window.sfx.ui) sfx.ui();
   const overlay = document.createElement('div');
   overlay.id = 'save-modal-overlay';
   overlay.style.zIndex = '2000';
   
-  let listHtml = '';
+  let mysteryHtml = '';
   if (!G.mysteries || G.mysteries.length === 0) {
-    listHtml = '<div style="color:#4a6070;text-align:center;padding:20px;">아직 확보된 단서가 없습니다.</div>';
+    mysteryHtml = '<div style="color:#4a6070;text-align:center;padding:10px;font-size:12px">아직 확보된 단서가 없습니다.</div>';
   } else {
     G.mysteries.forEach(id => {
       const key = id.replace('clue_', '');
       const text = window.MYSTERY_DATA ? (window.MYSTERY_DATA[key] || '해독할 수 없는 파편입니다.') : '데이터 로드 실패';
-      listHtml += `
-        <div class="mystery-item" style="border-left:2px solid #80e0a8;padding:8px 12px;margin-bottom:10px;background:rgba(128,224,168,0.05);border-radius:0 4px 4px 0">
-          <div style="font-size:10px;color:#80e0a8;margin-bottom:3px;text-transform:uppercase;letter-spacing:1px">🔍 STATION.${key}</div>
-          <div style="font-size:13px;line-height:1.5;color:#c8e8f8;word-break:keep-all">${text}</div>
+      mysteryHtml += `
+        <div class="mystery-item" style="border-left:2px solid #80e0a8;padding:6px 10px;margin-bottom:8px;background:rgba(128,224,168,0.05);border-radius:0 4px 4px 0">
+          <div style="font-size:10px;color:#80e0a8;margin-bottom:2px">🔍 STATION.${key}</div>
+          <div style="font-size:12px;color:#c8e8f8;line-height:1.4">${text}</div>
         </div>
       `;
     });
+  }
+
+  // 전체 로그 복제 (Train Log)
+  const trainLog = document.getElementById('train-log');
+  let logHtml = '기록된 로그가 없습니다.';
+  if (trainLog) {
+    // 로그가 너무 많을 경우를 대비해 복제본 생성 후 스타일 조정
+    logHtml = trainLog.innerHTML;
   }
 
   const mysteryMax = window.MYSTERY_DATA ? Object.keys(window.MYSTERY_DATA).length : 37;
@@ -402,48 +461,62 @@ function showMysteryArchive() {
   const mysteryRate = Math.floor((mysteryCount / mysteryMax) * 100);
 
   overlay.innerHTML = `
-    <div id="save-modal" style="max-width:400px;width:95%;border-top:2px solid #80e0a8">
+    <div id="save-modal" style="max-width:500px;width:95%;border-top:2px solid #80e0a8;height:85vh;display:flex;flex-direction:column;max-height:800px">
       <div id="save-modal-header">
-        <span>🔍 미스터리 아카이브 & 생존 기록</span>
+        <span>📜 생존 연대기 (Survival Chronicle)</span>
         <button id="archive-close">✕</button>
       </div>
 
-      <!-- 생준 요약 섹션 -->
-      <div style="background:#0a1015;padding:15px;border-bottom:1px solid #0e2030;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
-          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">현재 누적 業(업)</div>
-          <div style="font-size:18px;color:#80e0a8;font-weight:700">${G.score} <span style="font-size:11px;font-weight:400">Pts</span></div>
+      <div style="background:#0a1015;padding:12px;border-bottom:1px solid #1e3040;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:#5a8090">業(업)</div>
+          <div style="font-size:16px;color:#80e0a8;font-weight:700">${G.score}</div>
         </div>
-        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
-          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">미스터리 해독률</div>
-          <div style="font-size:18px;color:#c8e8f8;font-weight:700">${mysteryCount} / ${mysteryMax} <span style="font-size:11px;font-weight:400">(${mysteryRate}%)</span></div>
+        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:#5a8090">단서</div>
+          <div style="font-size:16px;color:#c8e8f8;font-weight:700">${mysteryCount}/${mysteryMax}</div>
         </div>
-        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
-          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">지명 유래 해독</div>
-          <div style="font-size:16px;color:#80e0a8">${G.hanjaSuccess} / ${G.hanjaAttempts}</div>
+        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:#5a8090">해독</div>
+          <div style="font-size:16px;color:#80e0a8">${G.hanjaSuccess}</div>
         </div>
-        <div style="border:1px solid #1a3040;padding:8px;border-radius:4px;text-align:center">
-          <div style="font-size:10px;color:#5a8090;margin-bottom:4px">현재 위치</div>
-          <div style="font-size:16px;color:#c8e8f8">${G.currentStation >= 0 ? STATIONS[G.currentStation].name : '인트로'}</div>
+        <div style="border:1px solid #1a3040;padding:6px;border-radius:4px;text-align:center">
+          <div style="font-size:9px;color:#5a8090">이동</div>
+          <div style="font-size:16px;color:#c8e8f8">${G.moveCount}역</div>
         </div>
       </div>
 
-      <div style="max-height:300px;overflow-y:auto;padding:15px 10px;background:#070b0e" class="custom-scroll">
-        <div style="font-size:11px;color:#4a6070;margin-bottom:12px;text-align:center">── 확보된 미스터리 단서 목록 ──</div>
-        ${listHtml}
+      <div style="flex:1;overflow-y:auto;padding:15px;background:#070b0e" class="chronicle-scroll">
+        <div style="font-size:11px;color:#c05020;margin-bottom:10px;border-bottom:1px dashed #302010;padding-bottom:4px;letter-spacing:1px">🔍 COLLECTED MYSTERIES</div>
+        ${mysteryHtml}
+        
+        <div style="font-size:11px;color:#5a8090;margin:25px 0 10px;border-bottom:1px dashed #1a3040;padding-bottom:4px;letter-spacing:1px">📋 SURVIVAL LOGS (최근순)</div>
+        <div style="font-family:'Courier New',monospace;font-size:11px;line-height:1.6;color:#4a6070">
+          ${logHtml}
+        </div>
       </div>
-      <div style="padding:10px;text-align:center;border-top:1px solid #0e2030;background:#0a1015">
-        <button class="save-load-btn" id="archive-close-btn">기록창 닫기</button>
+
+      <div style="padding:10px;text-align:center;border-top:1px solid #1e3040;background:#0a1015">
+        <button class="save-load-btn" id="archive-close-btn" style="width:100%;height:44px">기록창 닫기</button>
       </div>
     </div>
   `;
+
   document.body.appendChild(overlay);
-  
-  const close = () => { overlay.remove(); if (window.sfx && window.sfx.ui) sfx.ui(); };
-  document.getElementById('archive-close').onclick = close;
-  const cbtn = document.getElementById('archive-close-btn');
-  if (cbtn) cbtn.onclick = close;
-  overlay.onclick = (e) => { if (e.target === overlay) close(); };
+  requestAnimationFrame(() => overlay.classList.add('show'));
+
+  const dismiss = () => {
+    overlay.classList.remove('show');
+    setTimeout(() => { overlay.remove(); if (window.sfx && window.sfx.ui) sfx.ui(); }, 400);
+  };
+  document.getElementById('archive-close').onclick = dismiss;
+  document.getElementById('archive-close-btn').onclick = dismiss;
+  overlay.onclick = (e) => { if (e.target === overlay) dismiss(); };
+}
+
+// 기존 함수명 매핑 (호환성 유지)
+function showMysteryArchive() {
+  showSurvivalChronicle();
 }
 
 async function modifyStat(type, amount, skipCheck = false) {
@@ -948,7 +1021,6 @@ function print(html, cls = 'narrator', delay = 0) {
       OUT.appendChild(d);
       requestAnimationFrame(() => d.classList.add('show'));
 
-      // 순수 텍스트 서사일 경우 타자기 호과 활성화
       const isPlain = !html.includes('<') && html.trim() !== '' && !['blank','divider','system','name'].includes(cls);
       
       if (isPlain && !skipMode && !fastMode) {
@@ -962,9 +1034,9 @@ function print(html, cls = 'narrator', delay = 0) {
           }
           d.innerHTML += html.charAt(i);
           i++;
-          if (i % 3 === 0) sfx.tick(); // 오디오 부하 방지
+          if (i % 3 === 0) sfx.tick(); 
           if (i % 10 === 0) scrollBottom();
-          setTimeout(typeChar, 25); // 25ms per char
+          setTimeout(typeChar, 25);
         };
         typeChar();
       } else {
@@ -974,8 +1046,11 @@ function print(html, cls = 'narrator', delay = 0) {
         resolve();
       }
     };
-    if (skipMode || fastMode || delay === 0) { fn(); }
-    else {
+
+    const isPlain = !html.includes('<') && html.trim() !== '' && !['blank','divider','system','name'].includes(cls);
+    if (skipMode || fastMode || delay === 0 || isPlain) { 
+      fn(); 
+    } else {
       let resolved = false;
       const done = () => { if (!resolved) { resolved = true; fn(); } };
       const t = setTimeout(done, delay);

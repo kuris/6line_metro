@@ -128,10 +128,9 @@ window.choices = function(opts) {
 // ────────────────────────────────
 MAP_BTN.addEventListener('click', () => {
   sfx.ui();
-  const visible = MINIMAP_WRAP.style.display !== 'none';
-  MINIMAP_WRAP.style.display = visible ? 'none' : 'block';
-  MAP_BTN.classList.toggle('active', !visible);
-  if (!visible) buildMinimap();
+  if (typeof showSurvivalChronicle === 'function') {
+    showSurvivalChronicle();
+  }
 });
 
 // ────────────────────────────────

@@ -146,28 +146,51 @@ async function sceneIntro() {
     ['...여정의 시작점을 선택하십시오.', 'highlight', 1500],
   ]);
 
-  // 출발역 선택 시스템 (전 구간 거점역 지원)
+  // 출발역 선택 시스템 (지도 + 리스트 병행)
   await new Promise(resolve => {
-    const regionOpts = START_STATION_GROUPS.map(group => [
-      group.label, async () => {
-        // 지역 내 세부 역 선택
-        const stationOpts = group.stations.map(stId => {
-          const st = STATIONS[stId];
-          return [`${st.name} (${st.nameEn})`, async () => {
-            const isUp = stId < 30; // 대략적인 방향 설정
-            G.startStation = stId; 
-            G.currentStation = stId; 
-            G.direction = isUp ? 'up' : 'down'; 
-            G.dirStep = isUp ? 1 : -1; 
-            G.endStation = isUp ? 38 : 0;
-            resolve();
-          }];
-        });
-        stationOpts.push(['뒤로 가기', () => choices(regionOpts)]);
-        choices(stationOpts);
-      }
-    ]);
-    choices(regionOpts);
+    const showMapSelection = () => {
+      clearUI();
+      print('...여정의 시작점을 선택하십시오.', 'highlight');
+      
+      const mapWrap = buildLineMap((stId) => {
+        confirmSelection(stId);
+      });
+      OUT.appendChild(mapWrap);
+      
+      choices([
+        ['📋 목록에서 상세 지역 선택하기', () => showListSelection()]
+      ]);
+    };
+
+    const showListSelection = () => {
+      const regionOpts = START_STATION_GROUPS.map(group => [
+        group.label, async () => {
+          const stationOpts = group.stations.map(stId => {
+            const st = STATIONS[stId];
+            return [`${st.name} (${st.nameEn})`, () => confirmSelection(stId)];
+          });
+          stationOpts.push(['◀ 뒤로 가기', () => showListSelection()]);
+          choices(stationOpts);
+        }
+      ]);
+      regionOpts.push(['🗺 지도로 선택하기', () => showMapSelection()]);
+      choices(regionOpts);
+    };
+
+    const confirmSelection = (stId) => {
+      const isUp = stId < 30; // 대략적인 방향 설정
+      G.startStation = stId; 
+      G.currentStation = stId; 
+      G.direction = isUp ? 'up' : 'down'; 
+      G.dirStep = isUp ? 1 : -1; 
+      G.endStation = isUp ? 38 : 0;
+      
+      const st = STATIONS[stId];
+      TrainPanel.addLog(`출발: ${st.name}`, 'info');
+      resolve();
+    };
+
+    showMapSelection();
   });
 
   // 첫 이동 시작 (속도 상향)
