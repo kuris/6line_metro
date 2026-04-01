@@ -1033,7 +1033,7 @@ function print(html, cls = 'narrator', delay = 0) {
           i++;
           if (i % 3 === 0) sfx.tick(); 
           if (i % 10 === 0) scrollBottom();
-          setTimeout(typeChar, 25);
+          setTimeout(typeChar, 18);
         };
         typeChar();
       } else {
