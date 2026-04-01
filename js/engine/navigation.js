@@ -229,35 +229,66 @@ window.sceneStationHub = async function(stIdx) {
 };
 
 /**
- * 역 내부 탐색 로직
+ * 역 내부 탐색 로직 - 리스크 앤 리턴 & 미스터리 수집
  */
 async function exploreStation(st, stIdx, searches) {
   clearUI();
   await print(`${st.name}역 구석구석을 살펴보기 시작한다...`, 'narrator', 500);
 
-  // 탐색을 반복할수록 위험도 극증
-  if (searches >= 2) {
-    TrainPanel.addLog('위험한 탐색 - 둥지 접근', 'danger');
-    G.infection += 10;
-    updateStats();
-    if (window.HorrorFX) window.HorrorFX.flashBlood(600);
-    
-    await seq([
-      ['...', 'blank', 300],
-      ['너무 오래 머물렀다. 어둠 속에서 수많은 시선이 당신을 꿰뚫어본다.', 'death', 800],
-      ['蝕(식) +10% — 어둠의 오염에 노출됨.', 'warn', 1200]
-    ]);
-  }
-
-  // 역 고유 이벤트 실행 (첫 탐색 시)
-  if (st.hasEvent && st.eventId && STATION_EVENTS[st.eventId] && !G.seenEvents.includes(`main_${st.id}`)) {
+  // 1. 역 고유 이벤트 최우선 실행 (단, 탐색 횟수가 적을 때만 안전하게)
+  if (searches === 0 && st.hasEvent && st.eventId && STATION_EVENTS[st.eventId] && !G.seenEvents.includes(`main_${st.id}`)) {
     G.seenEvents.push(`main_${st.id}`);
     await STATION_EVENTS[st.eventId](stIdx);
     return;
   }
 
-  // 고유 이벤트가 없거나 소진된 경우 랜덤 돌발 조우
-  const poolType = (Math.random() < 0.3 + (searches * 0.2) + (G.infection / 200)) ? 'battle' : 'generic';
+  // 2. 리스크 계산 (탐색 횟수에 따라 기하급수적 리스크)
+  let riskLevel = searches;
+  
+  if (riskLevel >= 2) {
+    TrainPanel.addLog('위험한 탐색 - 둥지 접근', 'danger');
+    const infDmg = 5 * (riskLevel - 1);
+    const sanDmg = 3 * (riskLevel - 1);
+    G.infection += infDmg;
+    G.sanity -= sanDmg;
+    updateStats();
+    
+    await seq([
+      ['...', 'blank', 300],
+      [`너무 오래 머물렀다. 어둠 속에서 수많은 시선이 당신을 꿰뚫어본다. (탐색 ${searches}회 누적)`, 'death', 800],
+      [`蝕(식) +${infDmg}% / 魂(혼) -${sanDmg} — 심연에 노출됨.`, 'warn', 1200]
+    ]);
+  }
+
+  // 3. 미스터리 조각 획득 판정 (탐색을 깊이 할수록 발견 확률 증가)
+  const mysteryFoundChance = 0.3 + (searches * 0.15); // 기본 30%, 탐색할수록 오름
+  const alreadyFoundHere = G.seenEvents.includes(`mystery_${st.id}`);
+  
+  if (!alreadyFoundHere && Math.random() < mysteryFoundChance) {
+    G.seenEvents.push(`mystery_${st.id}`);
+    if (!G.mysteries) G.mysteries = [];
+    G.mysteries.push(`clue_${st.id}`);
+    G.sanity = Math.min(100, G.sanity + 15); // 단서를 찾으면 이성 보너스 (진실에 다가감)
+    updateStats();
+    
+    TrainPanel.addLog('미스터리 단서 획득', 'new');
+    await seq([
+      ['', 'blank', 500],
+      ['구석진 캐비닛 안쪽에서 피 묻은 생존자의 일지를 발견했다.', 'highlight', 1200],
+      ['"이 궤도는... 살아있어. 역들 자체가 거대한 생물처럼 숨을 쉬고 있다고!"', 'whisper', 2000],
+      ['[🔍 미스터리 단서를 획득했습니다!]', 'life', 3000],
+      ['魂(혼) +15 — 진실에 다가가며 막연한 공포가 이성으로 대체되었다.', 'new', 3800],
+      ['', 'blank', 4500],
+    ]);
+    
+    choices([
+        ['[ 안전한 곳(승강장)으로 돌아가기 ]', () => sceneStationHub(stIdx)]
+    ]);
+    return;
+  }
+
+  // 4. 고유 이벤트나 미스터리가 없으면, 돌발 조우 풀에서 추첨
+  const poolType = (Math.random() < 0.2 + (searches * 0.25) + (G.infection / 200)) ? 'battle' : 'generic';
   const pool = EVENT_POOL[poolType] || [];
   const available = pool.filter(ev => !G.seenEvents.includes(ev.id));
   
@@ -267,8 +298,7 @@ async function exploreStation(st, stIdx, searches) {
     TrainPanel.addLog(`돌발 조우: ${selected.title}`, 'warn');
     await selected.run(stIdx);
   } else {
-    // 풀이 떨어졌을 경우 무작위 텍스트 전투 조우
-    await maybeRandomEvent();
+    // 풀이 떨어졌을 경우
     await seq([
       ['더 이상 특별한 것은 보이지 않는다.', 'narrator', 1000]
     ]);

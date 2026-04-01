@@ -51,7 +51,7 @@ const G = {
   infection:     0,
   score:         0,
   missionCount:  0,
-  moveCount:     0,
+  mysteries:     [],      // 수집한 미스터리 조각(단서) ID 배열
   inventory:     [],      // 아이템 목록
   flags:         {},      // 스토리 플래그
   currentStation: -1,     // 현재 역 인덱스
@@ -299,8 +299,11 @@ function updateStats() {
   if (hpFill) hpFill.style.width = Math.max(0, Math.min(100, G.health)) + '%';
   const spFill = document.getElementById('st-sp-fill');
   if (spFill) spFill.style.width = Math.max(0, Math.min(100, G.sanity)) + '%';
-  const infFill = document.getElementById('st-inf-fill');
-  if (infFill) infFill.style.width = Math.max(0, Math.min(100, G.infection)) + '%';
+  const ST_INF_FILL = document.getElementById('st-inf-fill');
+  const ST_MYSTERY_WRAP = document.getElementById('st-mystery-wrap');
+  const ST_MYSTERY = document.getElementById('st-mystery');
+  
+  if (G.health === undefined) G.health = 100;Math.max(0, Math.min(100, G.infection)) + '%';
 
   // ────────────────────────────────
   // 전면적 호러 연출 연동 (정신력 魂 기반)
@@ -327,6 +330,14 @@ function updateStats() {
     } else {
       ST_HANJA_W.style.display = 'none';
     }
+  }
+  
+  // 옵션 패널 (단서, 이동 등)
+  if (G.mysteries && G.mysteries.length > 0) {
+    if (ST_MYSTERY_WRAP) ST_MYSTERY_WRAP.style.display = 'inline-block';
+    if (ST_MYSTERY) ST_MYSTERY.textContent = `${G.mysteries.length}개`;
+  } else {
+    if (ST_MYSTERY_WRAP) ST_MYSTERY_WRAP.style.display = 'none';
   }
 
   if (G.inventory && G.inventory.length > 0) {
@@ -456,12 +467,18 @@ function toggleTheme() {
   sfx.ui && sfx.ui();
 }
 
-// 저장된 테마 복원
+// 기본값을 라이트 테마로 설정
 (function() {
   try {
     const saved = localStorage.getItem('line6_theme');
-    if (saved === 'light') _applyTheme(true);
-  } catch(e) {}
+    if (saved === 'dark') {
+      _applyTheme(false);
+    } else {
+      _applyTheme(true); // Default
+    }
+  } catch(e) {
+    _applyTheme(true);
+  }
 })();
 
 THEME_BTN.addEventListener('click', toggleTheme);
@@ -835,21 +852,43 @@ function print(html, cls = 'narrator', delay = 0) {
       const d = document.createElement('div');
       d.className = 'line ' + cls;
       if (cls === 'blank') d.style.height = '10px';
-      d.innerHTML = html;
-      OUT.appendChild(d);
-
+      
       // 아바타 메시지 연동 (내레이션이나 다이얼로그일 때)
       if (cls === 'dialog' || cls === 'narrator' || cls === 'highlight' || cls === 'danger') {
-        const plainText = d.textContent;
-        if (plainText.trim() && !plainText.startsWith('[')) {
+        const plainText = html.replace(/<[^>]+>/g, '').trim();
+        if (plainText && !plainText.startsWith('[')) {
           setAvatarMessage(plainText);
         }
       }
 
+      OUT.appendChild(d);
       requestAnimationFrame(() => d.classList.add('show'));
-      if (!['blank','divider','system','name'].includes(cls) && html.trim()) sfx.tick();
-      scrollBottom();
-      resolve();
+
+      // 순수 텍스트 서사일 경우 타자기 호과 활성화
+      const isPlain = !html.includes('<') && html.trim() !== '' && !['blank','divider','system','name'].includes(cls);
+      
+      if (isPlain && !skipMode && !fastMode) {
+        let i = 0;
+        const typeChar = () => {
+          if (skipMode || fastMode || i >= html.length) {
+            d.innerHTML = html;
+            scrollBottom();
+            resolve();
+            return;
+          }
+          d.innerHTML += html.charAt(i);
+          i++;
+          if (i % 3 === 0) sfx.tick(); // 오디오 부하 방지
+          if (i % 10 === 0) scrollBottom();
+          setTimeout(typeChar, 25); // 25ms per char
+        };
+        typeChar();
+      } else {
+        d.innerHTML = html;
+        if (!['blank','divider','system','name'].includes(cls) && html.trim()) sfx.tick();
+        scrollBottom();
+        resolve();
+      }
     };
     if (skipMode || fastMode || delay === 0) { fn(); }
     else {

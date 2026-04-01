@@ -30,42 +30,7 @@ class HorrorFXEngine {
     }
   }
 
-  // 2. 혈흔 흘러내림 시작 (Blood Drip)
-  startBloodDrip(intensity = 500) {
-    if (this.bloodInterval) clearInterval(this.bloodInterval);
-    this.bloodInterval = setInterval(() => {
-      this.spawnBloodDrop();
-    }, intensity);
-  }
-
-  stopBloodDrip() {
-    if (this.bloodInterval) clearInterval(this.bloodInterval);
-    this.bloodInterval = null;
-  }
-
-  // 개별 핏방울 생성 (반투명 및 가변 길이 무작위성 강화)
-  spawnBloodDrop() {
-    if (!this.bloodLayer) return;
-    const drop = document.createElement('div');
-    drop.className = 'blood-drop drip';
-    
-    // 무작위 변수 계산
-    const x = Math.random() * 100;
-    const width = 1.5 + Math.random() * 5.5; 
-    const finalHeight = 150 + Math.random() * 450; // 150px ~ 600px 사이 무작위
-    const opacity = 0.4 + Math.random() * 0.5;    // 0.4 ~ 0.9 사이 무작위 투명도
-    const duration = 2.5 + Math.random() * 9;      // 각기 다른 속도
-    
-    // 스타일 주입
-    drop.style.left = `${x}%`;
-    drop.style.width = `${width}px`;
-    drop.style.animationDuration = `${duration}s`;
-    drop.style.setProperty('--blood-height', `${finalHeight}px`);
-    drop.style.setProperty('--blood-opacity', opacity);
-    
-    this.bloodLayer.appendChild(drop);
-    setTimeout(() => drop.remove(), duration * 1000);
-  }
+  // 피 흘러내리는 이펙트는 사용자의 요청으로 완전히 제거되었습니다.
 
   // 핏자국 생성 (Splatter)
   spawnSplatter() {
