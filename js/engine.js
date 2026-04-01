@@ -399,10 +399,10 @@ function updateStats() {
   }
 
   if (G.inventory && G.inventory.length > 0) {
-    ST_ITM_W.style.display = '';
-    ST_ITM.textContent = G.inventory.join(', ');
+    if (ST_ITM_W) ST_ITM_W.style.display = '';
+    if (ST_ITM) ST_ITM.textContent = G.inventory.join(', ');
   } else {
-    ST_ITM_W.style.display = 'none';
+    if (ST_ITM_W) ST_ITM_W.style.display = 'none';
   }
 
   // 동행자 UI 업데이트

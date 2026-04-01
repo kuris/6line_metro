@@ -139,8 +139,20 @@
       
       <div class="aside-stats-sub">
         <div class="stat-text-item">業(업): <span id="st-score">0</span></div>
-        <div class="stat-text-item">🔍 단서: <span id="st-mystery">0개</span></div>
+        <div class="stat-text-item" title="해결한 미션 수">🏆 미션: <span id="st-mission">0</span></div>
+        <div class="stat-text-item" id="st-mystery-wrap" title="미스터리 단서 목록 보기">🔍 단서: <span id="st-mystery">0개</span></div>
         <div class="stat-text-item">🚇 <span id="st-move">0</span>역 통과</div>
+      </div>
+
+      <!-- 추가 상태 정보 -->
+      <div id="st-item-wrap" style="display:none; font-size:11px; margin-top:12px; padding:6px; background:var(--bg3); border-radius:4px; color:var(--dim); border-left:2px solid var(--gold);">
+        📦 소지품: <span id="st-item" style="color:var(--text);"></span>
+      </div>
+      <div id="st-hanja-wrap" style="display:none; font-size:11px; margin-top:6px; padding:6px; background:var(--bg3); border-radius:4px; color:var(--dim); border-left:2px solid var(--blue);">
+        📜 해독: <span id="st-hanja" style="color:var(--text);">0/0</span>
+      </div>
+      <div id="st-companion-wrap" style="display:none; font-size:11px; margin-top:6px; padding:6px; background:var(--bg3); border-radius:4px; color:var(--dim); border-left:2px solid var(--green);">
+        👥 동행: <span id="st-companion" style="color:var(--text);"></span>
       </div>
     </div>
 
